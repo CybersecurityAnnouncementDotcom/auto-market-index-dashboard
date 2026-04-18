@@ -498,6 +498,141 @@ app.post('/api/auth/api-key', authLimiter, proxyToAuth('POST'));
 app.delete('/api/auth/api-key', authLimiter, proxyToAuth('DELETE'));
 
 // ---------------------------------------------------------------------------
+// Overlay endpoints: SP500, Gold, BTC (read from stocks dashboard DB)
+// ---------------------------------------------------------------------------
+const OVERLAY_DB = process.env.OVERLAY_DB || '/home/support/stock-market-time-machine-dashboard/data/stock_markets.db';
+const OVERLAY_TABLES = { spx: 'sp500_data', gold: 'gold_data', btc: 'btc_data' };
+function openOverlay() {
+  try {
+    if (!fs.existsSync(OVERLAY_DB) || fs.statSync(OVERLAY_DB).size === 0) return null;
+    return new Database(OVERLAY_DB, { readonly: true, fileMustExist: true });
+  } catch (e) { return null; }
+}
+function overlayHandler(which) {
+  return (req, res) => {
+    try {
+      const since = getSince(req.query.range || 'MAX');
+      const odb = openOverlay();
+      if (!odb) return res.json({ readings: [] });
+      const table = OVERLAY_TABLES[which];
+      const rows = odb.prepare(`SELECT timestamp, price AS value FROM ${table} WHERE timestamp >= ? ORDER BY timestamp ASC`).all(since);
+      odb.close();
+      res.json({ readings: rows });
+    } catch (err) { res.status(500).json({ error: err.message, readings: [] }); }
+  };
+}
+app.get('/api/sp500-history', apiLimiter, requireAuth, overlayHandler('spx'));
+app.get('/api/gold-history',  apiLimiter, requireAuth, overlayHandler('gold'));
+app.get('/api/btc-history',   apiLimiter, requireAuth, overlayHandler('btc'));
+
+// ---------------------------------------------------------------------------
+// Monthly rebalance with splice continuity
+// ---------------------------------------------------------------------------
+db.exec(`
+  CREATE TABLE IF NOT EXISTS rebalance_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_at TEXT NOT NULL,
+    added_json TEXT,
+    dropped_json TEXT,
+    pre_index REAL,
+    post_index REAL,
+    pre_scale REAL,
+    post_scale REAL
+  );
+  CREATE TABLE IF NOT EXISTS model_status (
+    make TEXT NOT NULL,
+    model TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    is_bench INTEGER NOT NULL DEFAULT 0,
+    dropped_at TEXT,
+    promoted_at TEXT,
+    PRIMARY KEY (make, model)
+  );
+  CREATE TABLE IF NOT EXISTS index_scale (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    scale REAL NOT NULL DEFAULT 1.0
+  );
+`);
+
+// Seed model_status from MODELS list on first run (all active, none benched)
+(function seedModelStatus() {
+  const existing = db.prepare('SELECT COUNT(*) AS c FROM model_status').get().c;
+  if (existing > 0) return;
+  const ins = db.prepare('INSERT INTO model_status (make, model, is_active, is_bench) VALUES (?, ?, 1, 0)');
+  const tx = db.transaction(() => { for (const m of MODELS) ins.run(m.make, m.model); });
+  tx();
+  db.prepare('INSERT OR IGNORE INTO index_scale (id, scale) VALUES (1, 1.0)').run();
+  console.log(`[auto] seeded model_status with ${MODELS.length} models`);
+})();
+
+app.get('/api/rebalance-history', apiLimiter, requireAuth, (req, res) => {
+  try {
+    const events = db.prepare('SELECT * FROM rebalance_events ORDER BY run_at DESC LIMIT 50').all();
+    res.json({ events });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+async function monthlyRebalance() {
+  console.log('[auto] === monthly rebalance start ===');
+  const runAt = new Date().toISOString();
+
+  // Identify zero-listing models over last 30 days
+  const thirtyAgo = new Date(Date.now() - 30*86400000).toISOString();
+  const zeroVol = db.prepare(`
+    SELECT ms.make, ms.model
+    FROM model_status ms
+    LEFT JOIN (
+      SELECT make, model, SUM(COALESCE(listing_count,0)) AS v
+      FROM auto_prices WHERE timestamp >= ? GROUP BY make, model
+    ) ap ON ap.make = ms.make AND ap.model = ms.model
+    WHERE ms.is_active = 1 AND COALESCE(ap.v, 0) = 0
+  `).all(thirtyAgo);
+
+  const pre = db.prepare('SELECT index_value FROM auto_index ORDER BY timestamp DESC LIMIT 1').get();
+  const preIndex = pre ? pre.index_value : null;
+  const preScaleRow = db.prepare('SELECT scale FROM index_scale WHERE id = 1').get();
+  const preScale = preScaleRow ? preScaleRow.scale : 1.0;
+
+  // The 25-model basket is a fixed list today. Rebalance = drop zero-volume and
+  // log the event. (Adding new models requires a code change to MODELS[].)
+  const dropStmt = db.prepare('UPDATE model_status SET is_active = 0, dropped_at = ? WHERE make = ? AND model = ?');
+  const tx = db.transaction(() => { for (const d of zeroVol) dropStmt.run(runAt, d.make, d.model); });
+  tx();
+
+  await pollAllModels();
+
+  const post = db.prepare('SELECT index_value FROM auto_index ORDER BY timestamp DESC LIMIT 1').get();
+  const rawPostIndex = post ? post.index_value / preScale : null;
+  let postScale = preScale;
+  if (preIndex && rawPostIndex && rawPostIndex > 0) postScale = preIndex / rawPostIndex;
+
+  if (post) {
+    const spliced = Math.round(rawPostIndex * postScale * 100) / 100;
+    db.prepare('UPDATE auto_index SET index_value = ? WHERE timestamp = (SELECT MAX(timestamp) FROM auto_index)').run(spliced);
+    db.prepare('UPDATE index_scale SET scale = ? WHERE id = 1').run(postScale);
+  }
+
+  db.prepare(`INSERT INTO rebalance_events
+    (run_at, added_json, dropped_json, pre_index, post_index, pre_scale, post_scale)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`)
+    .run(runAt, '[]', JSON.stringify(zeroVol), preIndex, preIndex, preScale, postScale);
+
+  console.log(`[auto] rebalance done. dropped=${zeroVol.length} preIndex=${preIndex} scale=${preScale}→${postScale}`);
+}
+
+let lastAutoRebalanceKey = null;
+setInterval(async () => {
+  const now = new Date();
+  if (now.getUTCDate() === 1 && now.getUTCHours() === 3) {
+    const key = `${now.getUTCFullYear()}-${now.getUTCMonth()}`;
+    if (lastAutoRebalanceKey !== key) {
+      lastAutoRebalanceKey = key;
+      try { await monthlyRebalance(); } catch (e) { console.error('[auto] rebalance err:', e); }
+    }
+  }
+}, 60 * 60 * 1000);
+
+// ---------------------------------------------------------------------------
 // Scheduling: weekly poll (every 7 days)
 // Startup: poll immediately if auto_prices table is empty
 // ---------------------------------------------------------------------------
