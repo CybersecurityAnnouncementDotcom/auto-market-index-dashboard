@@ -245,6 +245,22 @@
     }
     .range-btn:hover { background: var(--surface-3); color: var(--text); }
     .range-btn.active { background: var(--primary); color: #fff; }
+    .overlay-btn {
+      background: transparent;
+      border: 1px solid rgba(74,127,203,0.3);
+      color: var(--text-faint, #8a8a8a);
+      font-family: var(--font-mono, monospace);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: 4px;
+    }
+    .overlay-btn:hover { color: var(--text-muted, #aaa); border-color: rgba(74,127,203,0.5); }
+    .overlay-btn.active[data-key="spx"]  { background: rgba(74,127,203,0.2); color: #4a7fcb; border-color: #4a7fcb; }
+    .overlay-btn.active[data-key="gold"] { background: rgba(255,215,0,0.15);  color: #ffd700; border-color: #ffd700; }
+    .overlay-btn.active[data-key="btc"]  { background: rgba(247,147,26,0.15); color: #f7931a; border-color: #f7931a; }
 
     .chart-container {
       position: relative;
@@ -533,6 +549,9 @@
             <button class="range-btn" data-range="1M">1M</button>
             <button class="range-btn" data-range="1Y">1Y</button>
             <button class="range-btn active" data-range="MAX">MAX</button>
+            <button class="overlay-btn active" data-key="spx"  title="S&amp;P 500 overlay">SPX</button>
+            <button class="overlay-btn active" data-key="gold" title="Gold overlay">GLD</button>
+            <button class="overlay-btn active" data-key="btc"  title="Bitcoin overlay">BTC</button>
           </div>
         </div>
         <div class="chart-container">
@@ -701,6 +720,32 @@ let currentCat   = 'ALL';
 let currentData  = null;
 let indexChart   = null;
 let userTier     = null;
+const overlayState = { spx: true, gold: true, btc: true };
+const overlayData  = { spx: [], gold: [], btc: [] };
+
+// ── Overlay helpers ──
+async function fetchOverlay(key, range) {
+  try {
+    const ep = key === 'spx' ? 'sp500' : key;
+    const r = await fetch(`/api/${ep}-history?range=${range}`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    return data.readings || [];
+  } catch { return []; }
+}
+
+function nearestValue(overlayArr, targetTs, useIntraday) {
+  if (!overlayArr || overlayArr.length === 0) return null;
+  const targetMs = new Date(targetTs).getTime();
+  const toleranceMs = useIntraday ? 2 * 60 * 1000 : 24 * 60 * 60 * 1000;
+  let best = null, bestDist = Infinity;
+  for (const r of overlayArr) {
+    const dist = Math.abs(new Date(r.timestamp).getTime() - targetMs);
+    if (dist < bestDist) { bestDist = dist; best = r; }
+  }
+  if (best && bestDist <= toleranceMs) return best.value ?? best.price ?? null;
+  return null;
+}
 
 // ── Helpers ──
 const fmt = v => v != null ? '$' + Math.round(v).toLocaleString() : '—';
@@ -726,18 +771,57 @@ function initChart() {
   indexChart = new Chart(ctx, {
     type: 'line',
     data: {
-      datasets: [{
-        label: 'AUTO INDEX',
-        data: [],
-        borderColor: '#ef4444',
-        backgroundColor: 'rgba(239,68,68,0.08)',
-        fill: true,
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        pointBackgroundColor: '#ef4444',
-        tension: 0.3,
-      }]
+      datasets: [
+        {
+          label: 'AUTO INDEX',
+          data: [],
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.08)',
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#ef4444',
+          tension: 0.3,
+          yAxisID: 'y',
+        },
+        {
+          label: 'S&P 500',
+          data: [],
+          borderColor: '#4a7fcb',
+          backgroundColor: 'rgba(74,127,203,0.05)',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.2,
+          yAxisID: 'y1',
+          hidden: false,
+          spanGaps: true,
+        },
+        {
+          label: 'Gold',
+          data: [],
+          borderColor: '#ffd700',
+          backgroundColor: 'rgba(255,215,0,0.05)',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.2,
+          yAxisID: 'y2',
+          hidden: false,
+          spanGaps: true,
+        },
+        {
+          label: 'Bitcoin',
+          data: [],
+          borderColor: '#f7931a',
+          backgroundColor: 'rgba(247,147,26,0.05)',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.2,
+          yAxisID: 'y3',
+          hidden: false,
+          spanGaps: true,
+        },
+      ]
     },
     options: {
       responsive: true,
@@ -753,7 +837,10 @@ function initChart() {
           bodyColor: '#a08080',
           padding: 10,
           callbacks: {
-            label: ctx => ' AUTO INDEX: ' + fmt(ctx.parsed.y),
+            label: ctx => {
+              if (ctx.datasetIndex === 0) return ' AUTO INDEX: ' + fmt(ctx.parsed.y);
+              return ' ' + ctx.dataset.label + ': ' + (ctx.parsed.y != null ? '$' + Math.round(ctx.parsed.y).toLocaleString() : '—');
+            },
           }
         }
       },
@@ -772,7 +859,10 @@ function initChart() {
             font: { family: "'DM Mono', monospace", size: 11 },
             callback: v => '$' + Math.round(v).toLocaleString(),
           },
-        }
+        },
+        y1: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
+        y2: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
+        y3: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
       }
     }
   });
@@ -859,10 +949,36 @@ function renderModelCards(models) {
 // ── Load chart history ──
 async function loadChartHistory(range) {
   try {
-    const data = await apiFetch(`/api/index-history?range=${range}`);
-    const pts  = (data.readings || []).map(r => ({ x: new Date(r.timestamp), y: r.value }));
+    const useIntraday = ['1W'].includes(range); // auto only has week/month/year/MAX
+    const [data, spx, gold, btc] = await Promise.all([
+      apiFetch(`/api/index-history?range=${range}`),
+      fetchOverlay('spx', range),
+      fetchOverlay('gold', range),
+      fetchOverlay('btc', range),
+    ]);
+    overlayData.spx  = spx;
+    overlayData.gold = gold;
+    overlayData.btc  = btc;
 
+    const readings = data.readings || [];
+    const pts = readings.map(r => ({ x: new Date(r.timestamp), y: r.value }));
     indexChart.data.datasets[0].data = pts;
+
+    // Align overlays
+    function alignOverlay(arr) {
+      return readings.map(r => {
+        const v = nearestValue(arr, r.timestamp, useIntraday);
+        return { x: new Date(r.timestamp), y: v };
+      });
+    }
+
+    indexChart.data.datasets[1].data = overlayState.spx  ? alignOverlay(spx)  : [];
+    indexChart.data.datasets[2].data = overlayState.gold ? alignOverlay(gold) : [];
+    indexChart.data.datasets[3].data = overlayState.btc  ? alignOverlay(btc)  : [];
+    indexChart.data.datasets[1].hidden = !overlayState.spx;
+    indexChart.data.datasets[2].hidden = !overlayState.gold;
+    indexChart.data.datasets[3].hidden = !overlayState.btc;
+
     indexChart.update('none');
   } catch(e) {
     console.error('loadChartHistory error:', e);
@@ -896,6 +1012,17 @@ function setupRangeToggles() {
       document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       loadChartHistory(currentRange);
+    });
+  });
+  // Overlay toggle buttons
+  document.querySelectorAll('.overlay-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key;
+      overlayState[key] = !overlayState[key];
+      btn.classList.toggle('active', overlayState[key]);
+      const idxMap = { spx: 1, gold: 2, btc: 3 };
+      indexChart.data.datasets[idxMap[key]].hidden = !overlayState[key];
+      indexChart.update();
     });
   });
 }
