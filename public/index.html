@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Market Index — QuantitativeGenius</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0909;
+      --surface: #130a0a;
+      --surface-2: #1a0f0f;
+      --surface-3: #221515;
+      --border: #3a1f1f;
+      --text: #eee4e4;
+      --text-muted: #a08080;
+      --text-faint: #6b4848;
+      --primary: #ef4444;
+      --primary-dim: rgba(239,68,68,0.12);
+      --primary-glow: rgba(239,68,68,0.08);
+      --silver: #9ca3af;
+      --silver-dim: rgba(156,163,175,0.12);
+      --green: #22c55e;
+      --green-dim: rgba(34,197,94,0.12);
+      --red: #ef4444;
+      --red-dim: rgba(239,68,68,0.12);
+      --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'DM Mono', 'SF Mono', monospace;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 15px;
+    }
+
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+    /* ── Header ── */
+    .site-header {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo-icon {
+      width: 32px; height: 32px;
+      flex-shrink: 0;
+    }
+    .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+    .logo-sub  { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .listing-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      background: var(--primary-dim);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 20px;
+      color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    /* ── User tier badge ── */
+    .tier-badge {
+      font-size: 11px; font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tier-pro  { background: var(--primary); color: #fff; }
+    .tier-basic { background: var(--surface-3); color: var(--text-muted); border: 1px solid var(--border); }
+    .tier-hidden { display: none; }
+
+    /* ── Main content ── */
+    main { padding: 32px 0 60px; }
+
+    /* ── Hero card ── */
+    .hero-section { margin-bottom: 28px; }
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 0% 50%, var(--primary-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-left { position: relative; z-index: 1; }
+    .hero-label {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .hero-title {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .hero-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .hero-value {
+      font-size: clamp(38px, 6vw, 58px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      font-family: var(--font-mono);
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .change-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .change-pill.positive { background: var(--green-dim); color: var(--green); }
+    .change-pill.negative { background: var(--red-dim); color: var(--red); }
+    .change-pill.neutral  { background: var(--surface-3); color: var(--text-muted); }
+    .trend-label {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .hero-right {
+      position: relative; z-index: 1;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .hero-timestamp {
+      font-size: 11px; color: var(--text-faint);
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+    }
+    .models-count {
+      font-size: 12px; color: var(--text-muted);
+    }
+
+    /* ── Pulse dot ── */
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--primary);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .pulse-dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.3;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.8); opacity: 0; } }
+
+    /* ── Chart section ── */
+    .chart-section { margin-bottom: 32px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .card-title {
+      font-size: 13px; font-weight: 600;
+      color: var(--text);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .range-toggles {
+      display: flex;
+      gap: 4px;
+    }
+    .range-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      transition: all var(--transition);
+    }
+    .range-btn:hover { background: var(--surface-3); color: var(--text); }
+    .range-btn.active { background: var(--primary); color: #fff; }
+
+    .chart-container {
+      position: relative;
+      padding: 20px;
+      height: 280px;
+    }
+
+    /* ── Category tabs ── */
+    .category-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .cat-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all var(--transition);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .cat-btn:hover { border-color: var(--primary); color: var(--text); }
+    .cat-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* ── Model grid ── */
+    .grid-section { margin-bottom: 32px; }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .section-title {
+      font-size: 13px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .model-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: default;
+      transition: all var(--transition);
+    }
+    .model-card:hover { border-color: var(--primary); background: var(--surface-2); transform: translateY(-1px); }
+    .model-card[data-category="Pickup"]     { border-left: 3px solid var(--primary); }
+    .model-card[data-category="Sedan"]      { border-left: 3px solid #60a5fa; }
+    .model-card[data-category="SUV"]        { border-left: 3px solid #a78bfa; }
+    .model-card[data-category="Luxury"]     { border-left: 3px solid #fbbf24; }
+    .model-card[data-category="Minivan"]    { border-left: 3px solid #34d399; }
+    .model-card[data-category="Commercial"] { border-left: 3px solid #fb923c; }
+
+    .model-card.hidden { display: none; }
+
+    .mc-category {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-faint);
+      margin-bottom: 4px;
+    }
+    .mc-name {
+      font-size: 13px; font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mc-make {
+      font-size: 11px; color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .mc-price {
+      font-size: 20px; font-weight: 700;
+      letter-spacing: -0.02em;
+      font-family: var(--font-mono);
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .mc-price-label {
+      font-size: 10px; color: var(--text-faint);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .mc-change {
+      font-size: 12px; font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .mc-change.positive { color: var(--green); }
+    .mc-change.negative { color: var(--red); }
+    .mc-change.neutral  { color: var(--text-faint); }
+    .mc-listings {
+      font-size: 10px; color: var(--text-faint);
+      margin-top: 4px;
+    }
+    .no-data { color: var(--text-faint); font-style: italic; font-size: 13px; }
+
+    /* ── How it works ── */
+    .how-section {
+      margin-bottom: 32px;
+    }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .how-item {
+      background: var(--surface);
+      padding: 20px;
+    }
+    .how-icon { font-size: 22px; margin-bottom: 8px; }
+    .how-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary); margin-bottom: 4px; }
+    .how-text  { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Export section ── */
+    .export-section { margin-bottom: 32px; }
+    .export-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+    .export-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text);
+      font-family: var(--font-body);
+      transition: all var(--transition);
+    }
+    .export-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .export-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pro-badge {
+      font-size: 9px; font-weight: 800;
+      background: var(--primary); color: #fff;
+      padding: 2px 5px; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-faint);
+    }
+
+    /* ── Skeleton / loading ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ── API Key modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      width: min(480px, calc(100vw - 40px));
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .modal-sub   { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .modal-input {
+      width: 100%; padding: 10px 14px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text); font-size: 13px; font-family: var(--font-mono);
+      margin-bottom: 12px;
+    }
+    .modal-input:focus { outline: none; border-color: var(--primary); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-primary {
+      padding: 9px 18px; border-radius: var(--radius-sm);
+      background: var(--primary); color: #fff;
+      font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; font-family: var(--font-body);
+    }
+    .btn-ghost {
+      padding: 9px 14px; border-radius: var(--radius-sm);
+      background: none; border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 13px;
+      cursor: pointer; font-family: var(--font-body);
+    }
+    .modal-msg { font-size: 12px; margin-top: 10px; min-height: 18px; }
+    .modal-msg.error   { color: var(--red); }
+    .modal-msg.success { color: var(--green); }
+
+    @media (max-width: 640px) {
+      .hero-card { flex-direction: column; padding: 20px; }
+      .hero-right { text-align: left; }
+      .hero-value { font-size: 36px; }
+      .models-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+      .how-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .how-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="https://quantitativegenius.com" class="logo">
+      <!-- SVG: stylized "QG" with speedometer arc -->
+      <svg class="logo-icon" viewBox="0 0 32 32" fill="none" aria-label="QuantitativeGenius logo">
+        <rect width="32" height="32" rx="8" fill="#ef4444"/>
+        <text x="16" y="22" text-anchor="middle" font-family="DM Sans, sans-serif" font-weight="700" font-size="14" fill="white">QG</text>
+        <path d="M6 25 Q16 8 26 25" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+      <div>
+        <div class="logo-text">QuantitativeGenius</div>
+        <div class="logo-sub">Auto Market Index</div>
+      </div>
+    </a>
+    <div class="header-right">
+      <span class="listing-badge">Listing prices (not sold prices)</span>
+      <span id="tierBadge" class="tier-badge tier-hidden"></span>
+      <button class="export-btn" id="apiKeyBtn" style="padding:7px 14px; font-size:12px;">
+        🔑 API Key
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<main>
+  <div class="container">
+
+    <!-- Hero -->
+    <section class="hero-section">
+      <div class="hero-card">
+        <div class="hero-left">
+          <div class="hero-label">
+            <span class="pulse-dot"></span>
+            Weekly Updated
+          </div>
+          <div class="hero-title">Auto Market Index</div>
+          <div class="hero-subtitle">25 popular US models tracked weekly</div>
+          <div class="hero-value" id="heroValue">—</div>
+          <div class="hero-meta">
+            <span class="change-pill neutral" id="changePill">—</span>
+            <span class="trend-label" id="trendLabel">Loading…</span>
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-timestamp" id="heroTimestamp">—</div>
+          <div class="models-count" id="modelsCount">25 models</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chart -->
+    <section class="chart-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">AUTO INDEX — Historical</span>
+          <div class="range-toggles" id="rangeToggles">
+            <button class="range-btn" data-range="1W">1W</button>
+            <button class="range-btn" data-range="1M">1M</button>
+            <button class="range-btn" data-range="1Y">1Y</button>
+            <button class="range-btn active" data-range="MAX">MAX</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="indexChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Model grid -->
+    <section class="grid-section">
+      <div class="section-header">
+        <span class="section-title">Model Prices — Median Listing</span>
+      </div>
+
+      <!-- Category filter tabs -->
+      <div class="category-tabs">
+        <button class="cat-btn active" data-cat="ALL">All (25)</button>
+        <button class="cat-btn" data-cat="Pickup">Pickups (5)</button>
+        <button class="cat-btn" data-cat="Sedan">Sedans (6)</button>
+        <button class="cat-btn" data-cat="SUV">SUVs (8)</button>
+        <button class="cat-btn" data-cat="Luxury">Luxury (4)</button>
+        <button class="cat-btn" data-cat="Minivan">Minivan (1)</button>
+        <button class="cat-btn" data-cat="Commercial">Commercial (1)</button>
+      </div>
+
+      <div class="models-grid" id="modelsGrid">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">How the Auto Index Works</span>
+        </div>
+        <div class="how-grid">
+          <div class="how-item">
+            <div class="how-icon">📡</div>
+            <div class="how-title">Weekly Polls</div>
+            <div class="how-text">Every 7 days we query Marketcheck's national active-listing database for each of the 25 models.</div>
+          </div>
+          <div class="how-item">
+            <div class="how-icon">📊</div>
+            <div class="how-title">Listing Medians</div>
+            <div class="how-text">We collect the median listing price per model — a robust measure that resists skew from outlier vehicles.</div>
+          </div>
+          <div class="how-item">
+            <div class="how-icon">🧮</div>
+            <div class="how-title">Index Calculation</div>
+            <div class="how-text">The AUTO INDEX equals the simple average of all 25 model medians — a broad, equally-weighted gauge.</div>
+          </div>
+          <div class="how-item">
+            <div class="how-icon">🔍</div>
+            <div class="how-title">Listing Prices Only</div>
+            <div class="how-text">These are asking prices on active used-car listings — not transaction prices. Actual sale prices typically differ.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Export -->
+    <section class="export-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Export Data</span>
+        </div>
+        <div style="padding: 20px;">
+          <div class="export-grid">
+            <button class="export-btn" id="exportCsv" disabled>
+              📥 Download CSV <span class="pro-badge">PRO</span>
+            </button>
+            <button class="export-btn" id="exportJson" disabled>
+              📥 Download JSON <span class="pro-badge">PRO</span>
+            </button>
+          </div>
+          <p style="margin-top:12px; font-size:12px; color:var(--text-faint);">
+            Pro export includes AUTO INDEX history and all 25 model median prices per week. Upgrade at <a href="https://quantitativegenius.com" style="color:var(--primary);">quantitativegenius.com</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /container -->
+</main>
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <span>© 2025 QuantitativeGenius &nbsp;·&nbsp; Auto Market Index</span>
+</footer>
+
+<!-- ── API Key Modal ── -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <div class="modal-title">API Key</div>
+    <div class="modal-sub">Pro subscribers can use an API key for programmatic access to this dashboard's data endpoints.</div>
+    <div id="apiKeyDisplay" style="display:none; margin-bottom:16px;">
+      <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Your API Key</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="existingKeyInput" class="modal-input" style="margin:0; flex:1;" readonly>
+        <button class="btn-ghost" id="copyKeyBtn">Copy</button>
+      </div>
+      <button class="btn-ghost" id="deleteKeyBtn" style="margin-top:10px; color:var(--red); border-color:var(--red);">Revoke Key</button>
+    </div>
+    <div id="apiKeyCreate" style="display:none;">
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">No API key found. Generate one below.</p>
+      <button class="btn-primary" id="createKeyBtn">Generate API Key</button>
+    </div>
+    <div id="apiKeyLogin" style="display:none;">
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Pro subscription required. Please log in or upgrade.</p>
+      <a href="https://quantitativegenius.com" class="btn-primary" style="display:inline-block; text-decoration:none;">Go to quantitativegenius.com</a>
+    </div>
+    <div class="modal-msg" id="modalMsg"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="closeModal">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Models data ──
+const MODELS = [
+  { make:'Ford',        model:'F-150',          category:'Pickup'     },
+  { make:'Chevrolet',   model:'Silverado 1500',  category:'Pickup'     },
+  { make:'Toyota',      model:'Tacoma',          category:'Pickup'     },
+  { make:'Ram',         model:'1500',            category:'Pickup'     },
+  { make:'Toyota',      model:'Tundra',          category:'Pickup'     },
+  { make:'Toyota',      model:'Camry',           category:'Sedan'      },
+  { make:'Honda',       model:'Accord',          category:'Sedan'      },
+  { make:'Toyota',      model:'Corolla',         category:'Sedan'      },
+  { make:'Honda',       model:'Civic',           category:'Sedan'      },
+  { make:'Nissan',      model:'Altima',          category:'Sedan'      },
+  { make:'Hyundai',     model:'Elantra',         category:'Sedan'      },
+  { make:'Toyota',      model:'RAV4',            category:'SUV'        },
+  { make:'Honda',       model:'CR-V',            category:'SUV'        },
+  { make:'Ford',        model:'Explorer',        category:'SUV'        },
+  { make:'Chevrolet',   model:'Equinox',         category:'SUV'        },
+  { make:'Toyota',      model:'Highlander',      category:'SUV'        },
+  { make:'Jeep',        model:'Grand Cherokee',  category:'SUV'        },
+  { make:'Ford',        model:'Escape',          category:'SUV'        },
+  { make:'Honda',       model:'Pilot',           category:'SUV'        },
+  { make:'Tesla',       model:'Model 3',         category:'Luxury'     },
+  { make:'Tesla',       model:'Model Y',         category:'Luxury'     },
+  { make:'BMW',         model:'3 Series',        category:'Luxury'     },
+  { make:'Mercedes-Benz', model:'C-Class',       category:'Luxury'     },
+  { make:'Honda',       model:'Odyssey',         category:'Minivan'    },
+  { make:'Ford',        model:'Transit',         category:'Commercial' },
+];
+
+const CATEGORY_COLORS = {
+  Pickup:     '#ef4444',
+  Sedan:      '#60a5fa',
+  SUV:        '#a78bfa',
+  Luxury:     '#fbbf24',
+  Minivan:    '#34d399',
+  Commercial: '#fb923c',
+};
+
+// ── State ──
+let currentRange = 'MAX';
+let currentCat   = 'ALL';
+let currentData  = null;
+let indexChart   = null;
+let userTier     = null;
+
+// ── Helpers ──
+const fmt = v => v != null ? '$' + Math.round(v).toLocaleString() : '—';
+const fmtChange = v => v != null ? (v >= 0 ? '+' : '') + v.toFixed(2) + '%' : '—';
+const changeClass = v => v == null ? 'neutral' : v > 0 ? 'positive' : v < 0 ? 'negative' : 'neutral';
+
+function formatTimestamp(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+// ── API fetch helper ──
+async function apiFetch(url) {
+  const r = await fetch(url, { credentials: 'include' });
+  if (!r.ok) throw new Error(r.status + ' ' + r.statusText);
+  return r.json();
+}
+
+// ── Init chart ──
+function initChart() {
+  const ctx = document.getElementById('indexChart').getContext('2d');
+  indexChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'AUTO INDEX',
+        data: [],
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239,68,68,0.08)',
+        fill: true,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: '#ef4444',
+        tension: 0.3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a0f0f',
+          borderColor: '#3a1f1f',
+          borderWidth: 1,
+          titleColor: '#eee4e4',
+          bodyColor: '#a08080',
+          padding: 10,
+          callbacks: {
+            label: ctx => ' AUTO INDEX: ' + fmt(ctx.parsed.y),
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { tooltipFormat: 'MMM d, yyyy', displayFormats: { week: 'MMM d', month: 'MMM yyyy', year: 'yyyy' } },
+          grid: { color: 'rgba(58,31,31,0.5)' },
+          ticks: { color: '#6b4848', font: { family: "'DM Mono', monospace", size: 11 } },
+        },
+        y: {
+          position: 'right',
+          grid: { color: 'rgba(58,31,31,0.5)' },
+          ticks: {
+            color: '#6b4848',
+            font: { family: "'DM Mono', monospace", size: 11 },
+            callback: v => '$' + Math.round(v).toLocaleString(),
+          },
+        }
+      }
+    }
+  });
+}
+
+// ── Load current data ──
+async function loadCurrent() {
+  try {
+    const data = await apiFetch('/api/current');
+    currentData = data;
+
+    // Hero value
+    document.getElementById('heroValue').textContent = fmt(data.index_value);
+
+    // Change pill
+    const pill = document.getElementById('changePill');
+    const pct  = data.index_change_pct;
+    pill.textContent = pct != null ? fmtChange(pct) + (data.index_change != null ? ` (${fmt(data.index_change)})` : '') : '—';
+    pill.className   = 'change-pill ' + changeClass(pct);
+
+    // Trend
+    const trendMap = { surging:'🚀 Surging', rising:'↑ Rising', stable:'→ Stable', falling:'↓ Falling', plunging:'📉 Plunging' };
+    document.getElementById('trendLabel').textContent = trendMap[data.trend] || 'Stable';
+
+    // Timestamp
+    document.getElementById('heroTimestamp').textContent = 'Updated ' + formatTimestamp(data.index_timestamp);
+
+    // Models count
+    const tracked = (data.models || []).filter(m => m.median_price != null).length;
+    document.getElementById('modelsCount').textContent = `${tracked} / 25 models with data`;
+
+    // Render model cards
+    renderModelCards(data.models || []);
+
+  } catch(e) {
+    document.getElementById('heroValue').textContent = '—';
+    document.getElementById('trendLabel').textContent = 'Data unavailable';
+    console.error('loadCurrent error:', e);
+  }
+}
+
+// ── Render model cards ──
+function renderModelCards(models) {
+  const grid = document.getElementById('modelsGrid');
+  grid.innerHTML = '';
+
+  // Build map from API data
+  const dataMap = {};
+  for (const m of models) {
+    dataMap[`${m.make}|${m.model}`] = m;
+  }
+
+  for (const spec of MODELS) {
+    const key  = `${spec.make}|${spec.model}`;
+    const d    = dataMap[key] || {};
+    const card = document.createElement('div');
+    card.className = 'model-card';
+    card.dataset.category = spec.category;
+
+    if (currentCat !== 'ALL' && spec.category !== currentCat) card.classList.add('hidden');
+
+    const hasData   = d.median_price != null;
+    const changeStr = hasData && d.change_percent != null
+      ? (d.change_percent >= 0 ? '▲ ' : '▼ ') + Math.abs(d.change_percent).toFixed(1) + '% vs prior week'
+      : hasData ? 'No prior week data' : '';
+    const changeCls = d.change_percent > 0 ? 'positive' : d.change_percent < 0 ? 'negative' : 'neutral';
+
+    card.innerHTML = `
+      <div class="mc-category">${spec.category}</div>
+      <div class="mc-name">${spec.model}</div>
+      <div class="mc-make">${spec.make}</div>
+      ${hasData
+        ? `<div class="mc-price">${fmt(d.median_price)}</div>
+           <div class="mc-price-label">Median Listing</div>
+           <div class="mc-change ${changeCls}">${changeStr}</div>
+           <div class="mc-listings">${d.listing_count != null ? d.listing_count.toLocaleString() + ' active listings' : ''}</div>`
+        : `<div class="mc-price no-data">No data yet</div><div class="mc-price-label">—</div>`
+      }
+    `;
+    grid.appendChild(card);
+  }
+}
+
+// ── Load chart history ──
+async function loadChartHistory(range) {
+  try {
+    const data = await apiFetch(`/api/index-history?range=${range}`);
+    const pts  = (data.readings || []).map(r => ({ x: new Date(r.timestamp), y: r.value }));
+
+    indexChart.data.datasets[0].data = pts;
+    indexChart.update('none');
+  } catch(e) {
+    console.error('loadChartHistory error:', e);
+  }
+}
+
+// ── Category filter ──
+function setupCategoryTabs() {
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentCat = btn.dataset.cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.model-card').forEach(card => {
+        if (currentCat === 'ALL' || card.dataset.category === currentCat) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+}
+
+// ── Range toggles ──
+function setupRangeToggles() {
+  document.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRange = btn.dataset.range;
+      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadChartHistory(currentRange);
+    });
+  });
+}
+
+// ── User tier ──
+async function loadUserTier() {
+  try {
+    const data = await apiFetch('/api/user-tier');
+    userTier = data.tier;
+
+    const badge = document.getElementById('tierBadge');
+    badge.classList.remove('tier-hidden');
+    if (userTier === 'pro') {
+      badge.textContent = 'PRO';
+      badge.className   = 'tier-badge tier-pro';
+      document.getElementById('exportCsv').disabled  = false;
+      document.getElementById('exportJson').disabled = false;
+    } else {
+      badge.textContent = 'BASIC';
+      badge.className   = 'tier-badge tier-basic';
+    }
+  } catch(e) {
+    // Not logged in or auth failed — export buttons remain disabled
+  }
+}
+
+// ── Export buttons ──
+function setupExports() {
+  document.getElementById('exportCsv').addEventListener('click', async () => {
+    try {
+      const r = await fetch(`/api/export/csv?range=${currentRange}`, { credentials:'include' });
+      if (!r.ok) { alert('Export failed: ' + r.status); return; }
+      const blob = await r.blob();
+      const a    = document.createElement('a');
+      a.href     = URL.createObjectURL(blob);
+      a.download = `auto-market-index-${currentRange}.csv`;
+      a.click();
+    } catch(e) { alert('Export error: ' + e.message); }
+  });
+
+  document.getElementById('exportJson').addEventListener('click', async () => {
+    try {
+      const r = await fetch(`/api/export/json?range=${currentRange}`, { credentials:'include' });
+      if (!r.ok) { alert('Export failed: ' + r.status); return; }
+      const blob = await r.blob();
+      const a    = document.createElement('a');
+      a.href     = URL.createObjectURL(blob);
+      a.download = `auto-market-index-${currentRange}.json`;
+      a.click();
+    } catch(e) { alert('Export error: ' + e.message); }
+  });
+}
+
+// ── API Key Modal ──
+function setupApiKeyModal() {
+  const modal       = document.getElementById('apiModal');
+  const openBtn     = document.getElementById('apiKeyBtn');
+  const closeBtn    = document.getElementById('closeModal');
+  const msg         = document.getElementById('modalMsg');
+
+  openBtn.addEventListener('click', async () => {
+    modal.classList.add('open');
+    msg.textContent = '';
+    document.getElementById('apiKeyDisplay').style.display  = 'none';
+    document.getElementById('apiKeyCreate').style.display   = 'none';
+    document.getElementById('apiKeyLogin').style.display    = 'none';
+
+    try {
+      const data = await apiFetch('/api/auth/api-key-status');
+      if (data.api_key) {
+        document.getElementById('existingKeyInput').value    = data.api_key;
+        document.getElementById('apiKeyDisplay').style.display = 'block';
+      } else if (data.can_create) {
+        document.getElementById('apiKeyCreate').style.display = 'block';
+      } else {
+        document.getElementById('apiKeyLogin').style.display  = 'block';
+      }
+    } catch(e) {
+      document.getElementById('apiKeyLogin').style.display = 'block';
+    }
+  });
+
+  closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+
+  document.getElementById('copyKeyBtn')?.addEventListener('click', () => {
+    const val = document.getElementById('existingKeyInput').value;
+    navigator.clipboard.writeText(val).then(() => {
+      msg.textContent = 'Copied!'; msg.className = 'modal-msg success';
+      setTimeout(() => { msg.textContent = ''; }, 2000);
+    });
+  });
+
+  document.getElementById('createKeyBtn')?.addEventListener('click', async () => {
+    msg.textContent = 'Generating…'; msg.className = 'modal-msg';
+    try {
+      const r = await fetch('/api/auth/api-key', { method:'POST', credentials:'include' });
+      const d = await r.json();
+      if (d.api_key) {
+        document.getElementById('apiKeyCreate').style.display  = 'none';
+        document.getElementById('existingKeyInput').value = d.api_key;
+        document.getElementById('apiKeyDisplay').style.display = 'block';
+        msg.textContent = 'Key created!'; msg.className = 'modal-msg success';
+      } else {
+        msg.textContent = d.error || 'Failed to create key.'; msg.className = 'modal-msg error';
+      }
+    } catch(e) {
+      msg.textContent = 'Error: ' + e.message; msg.className = 'modal-msg error';
+    }
+  });
+
+  document.getElementById('deleteKeyBtn')?.addEventListener('click', async () => {
+    if (!confirm('Revoke your API key? This cannot be undone.')) return;
+    try {
+      const r = await fetch('/api/auth/api-key', { method:'DELETE', credentials:'include' });
+      const d = await r.json();
+      if (r.ok) {
+        document.getElementById('apiKeyDisplay').style.display = 'none';
+        document.getElementById('apiKeyCreate').style.display  = 'block';
+        msg.textContent = 'Key revoked.'; msg.className = 'modal-msg success';
+      } else {
+        msg.textContent = d.error || 'Failed.'; msg.className = 'modal-msg error';
+      }
+    } catch(e) {
+      msg.textContent = 'Error: ' + e.message; msg.className = 'modal-msg error';
+    }
+  });
+}
+
+// ── Boot ──
+(async () => {
+  initChart();
+  setupRangeToggles();
+  setupCategoryTabs();
+  setupExports();
+  setupApiKeyModal();
+
+  await Promise.all([
+    loadCurrent(),
+    loadChartHistory(currentRange),
+    loadUserTier(),
+  ]);
+})();
+</script>
+</body>
+</html>
