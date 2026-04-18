@@ -520,7 +520,7 @@ setInterval(pollAllModels, WEEKLY_MS);
 // ---------------------------------------------------------------------------
 // Start server
 // ---------------------------------------------------------------------------
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
   console.log(`Auto Market Index Dashboard running on http://localhost:${PORT}`);
   console.log(`Tracking ${MODELS.length} models | Weekly polling | Port ${PORT}`);
 });
