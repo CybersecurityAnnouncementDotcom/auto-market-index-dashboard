@@ -261,6 +261,8 @@
     .overlay-btn.active[data-key="spx"]  { background: rgba(74,127,203,0.2); color: #4a7fcb; border-color: #4a7fcb; }
     .overlay-btn.active[data-key="gold"] { background: rgba(255,215,0,0.15);  color: #ffd700; border-color: #ffd700; }
     .overlay-btn.active[data-key="btc"]  { background: rgba(247,147,26,0.15); color: #f7931a; border-color: #f7931a; }
+    .overlay-btn.active[data-key="amd"]  { background: rgba(20,184,166,0.18); color: #14b8a6; border-color: #14b8a6; }
+    .overlay-btn.active[data-key="ami"]  { background: rgba(239,68,68,0.18); color: #ef4444; border-color: #ef4444; }
 
     .chart-container {
       position: relative;
@@ -543,15 +545,17 @@
     <section class="chart-section">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">AUTO INDEX — Historical</span>
+          <span class="card-title">Auto Market Data — Historical</span>
           <div class="range-toggles" id="rangeToggles">
             <button class="range-btn" data-range="1W">1W</button>
             <button class="range-btn" data-range="1M">1M</button>
             <button class="range-btn" data-range="1Y">1Y</button>
             <button class="range-btn active" data-range="MAX">MAX</button>
+            <button class="overlay-btn active" data-key="amd"  title="Auto Market Data (primary, monthly)">AMD</button>
             <button class="overlay-btn active" data-key="spx"  title="S&amp;P 500 overlay">SPX</button>
             <button class="overlay-btn active" data-key="gold" title="Gold overlay">GLD</button>
             <button class="overlay-btn active" data-key="btc"  title="Bitcoin overlay">BTC</button>
+            <button class="overlay-btn"        data-key="ami"  title="Our 25-model Auto Market Index (short history)">AMI</button>
           </div>
         </div>
         <div class="chart-container">
@@ -720,13 +724,19 @@ let currentCat   = 'ALL';
 let currentData  = null;
 let indexChart   = null;
 let userTier     = null;
-const overlayState = { spx: true, gold: true, btc: true };
-const overlayData  = { spx: [], gold: [], btc: [] };
+// Dataset index for each toggleable series.
+// Auto Market Data (AMD) is the primary line. Auto Market Index (AMI) is our in-house
+// 25-model index — short history, default OFF.
+const DATASET_INDEX = { amd: 0, spx: 1, gold: 2, btc: 3, ami: 4 };
+const overlayState = { amd: true, spx: true, gold: true, btc: true, ami: false };
+const overlayData  = { amd: [], spx: [], gold: [], btc: [], ami: [] };
 
 // ── Overlay helpers ──
 async function fetchOverlay(key, range) {
   try {
-    const ep = key === 'spx' ? 'sp500' : key;
+    const epMap = { spx: 'sp500', gold: 'gold', btc: 'btc', amd: 'auto-market-data', ami: 'index' };
+    const ep = epMap[key];
+    if (!ep) return [];
     const r = await fetch(`/api/${ep}-history?range=${range}`);
     if (!r.ok) return [];
     const data = await r.json();
@@ -773,19 +783,22 @@ function initChart() {
     data: {
       datasets: [
         {
-          label: 'Auto Market Index',
+          // 0 = Auto Market Data (primary, monthly, back to 1997)
+          label: 'Auto Market Data',
           data: [],
-          borderColor: '#ef4444',
-          backgroundColor: 'rgba(239,68,68,0.08)',
+          borderColor: '#14b8a6',
+          backgroundColor: 'rgba(20,184,166,0.10)',
           fill: true,
-          borderWidth: 2,
-          pointRadius: 3,
+          borderWidth: 2.5,
+          pointRadius: 2,
           pointHoverRadius: 5,
-          pointBackgroundColor: '#ef4444',
-          tension: 0.3,
+          pointBackgroundColor: '#14b8a6',
+          tension: 0.25,
           yAxisID: 'y',
+          spanGaps: true,
         },
         {
+          // 1 = S&P 500 overlay
           label: 'S&P 500',
           data: [],
           borderColor: '#4a7fcb',
@@ -798,6 +811,7 @@ function initChart() {
           spanGaps: true,
         },
         {
+          // 2 = Gold overlay
           label: 'Gold',
           data: [],
           borderColor: '#ffd700',
@@ -810,6 +824,7 @@ function initChart() {
           spanGaps: true,
         },
         {
+          // 3 = Bitcoin overlay
           label: 'Bitcoin',
           data: [],
           borderColor: '#f7931a',
@@ -819,6 +834,21 @@ function initChart() {
           tension: 0.2,
           yAxisID: 'y3',
           hidden: false,
+          spanGaps: true,
+        },
+        {
+          // 4 = Auto Market Index (our 25-model index, short history) — default OFF
+          label: 'Auto Market Index',
+          data: [],
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.06)',
+          borderWidth: 1.8,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          pointBackgroundColor: '#ef4444',
+          tension: 0.3,
+          yAxisID: 'y4',
+          hidden: true,
           spanGaps: true,
         },
       ]
@@ -863,6 +893,7 @@ function initChart() {
         y1: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
         y2: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
         y3: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
+        y4: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
       }
     }
   });
@@ -947,37 +978,49 @@ function renderModelCards(models) {
 }
 
 // ── Load chart history ──
+// Auto Market Data is the PRIMARY series (monthly, since 1997) and drives the x-axis.
+// All other overlays are aligned against AMD points. AMI (our 25-model index) is a
+// togglable overlay that defaults OFF.
 async function loadChartHistory(range) {
   try {
-    const useIntraday = ['1W'].includes(range); // auto only has week/month/year/MAX
-    const [data, spx, gold, btc] = await Promise.all([
-      apiFetch(`/api/index-history?range=${range}`),
-      fetchOverlay('spx', range),
+    const useIntraday = false; // AMD is monthly — no intraday alignment needed
+    const [amd, spx, gold, btc, ami] = await Promise.all([
+      fetchOverlay('amd',  range),
+      fetchOverlay('spx',  range),
       fetchOverlay('gold', range),
-      fetchOverlay('btc', range),
+      fetchOverlay('btc',  range),
+      fetchOverlay('ami',  range),
     ]);
+    overlayData.amd  = amd;
     overlayData.spx  = spx;
     overlayData.gold = gold;
     overlayData.btc  = btc;
+    overlayData.ami  = ami;
 
-    const readings = data.readings || [];
-    const pts = readings.map(r => ({ x: new Date(r.timestamp), y: r.value }));
-    indexChart.data.datasets[0].data = pts;
+    // Build primary series from AMD (the monthly reference line)
+    const primaryPts = amd.map(r => ({ x: new Date(r.timestamp), y: r.value }));
+    indexChart.data.datasets[DATASET_INDEX.amd].data = primaryPts;
 
-    // Align overlays
-    function alignOverlay(arr) {
-      return readings.map(r => {
+    // Align one overlay arr to the primary AMD timestamps
+    function alignToPrimary(arr) {
+      return amd.map(r => {
         const v = nearestValue(arr, r.timestamp, useIntraday);
         return { x: new Date(r.timestamp), y: v };
       });
     }
 
-    indexChart.data.datasets[1].data = overlayState.spx  ? alignOverlay(spx)  : [];
-    indexChart.data.datasets[2].data = overlayState.gold ? alignOverlay(gold) : [];
-    indexChart.data.datasets[3].data = overlayState.btc  ? alignOverlay(btc)  : [];
-    indexChart.data.datasets[1].hidden = !overlayState.spx;
-    indexChart.data.datasets[2].hidden = !overlayState.gold;
-    indexChart.data.datasets[3].hidden = !overlayState.btc;
+    // Populate overlays
+    indexChart.data.datasets[DATASET_INDEX.spx].data  = alignToPrimary(spx);
+    indexChart.data.datasets[DATASET_INDEX.gold].data = alignToPrimary(gold);
+    indexChart.data.datasets[DATASET_INDEX.btc].data  = alignToPrimary(btc);
+    // AMI aligned against AMD timestamps (will mostly be null for pre-AMI history)
+    indexChart.data.datasets[DATASET_INDEX.ami].data  = alignToPrimary(ami);
+
+    // Apply current toggle visibility state — use Chart.js meta visibility as the
+    // single source of truth so hidden survives chart.update() re-renders.
+    for (const key of Object.keys(DATASET_INDEX)) {
+      applyDatasetVisibility(key, overlayState[key]);
+    }
 
     indexChart.update('none');
   } catch(e) {
@@ -1014,17 +1057,28 @@ function setupRangeToggles() {
       loadChartHistory(currentRange);
     });
   });
-  // Overlay toggle buttons
+  // Overlay toggle buttons — robust: use Chart.js meta visibility (survives re-renders)
   document.querySelectorAll('.overlay-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const key = btn.dataset.key;
+      if (!(key in DATASET_INDEX)) return;
       overlayState[key] = !overlayState[key];
       btn.classList.toggle('active', overlayState[key]);
-      const idxMap = { spx: 1, gold: 2, btc: 3 };
-      indexChart.data.datasets[idxMap[key]].hidden = !overlayState[key];
+      applyDatasetVisibility(key, overlayState[key]);
       indexChart.update();
     });
   });
+}
+
+// Robust dataset visibility — sets BOTH meta.hidden (Chart.js legend-level state) AND
+// the dataset.hidden property so the line stays hidden through subsequent chart.update()
+// calls that rewrite datasets[i].data (e.g. range switches, polling refreshes).
+function applyDatasetVisibility(key, visible) {
+  if (!indexChart) return;
+  const idx = DATASET_INDEX[key];
+  if (idx == null) return;
+  indexChart.data.datasets[idx].hidden = !visible;
+  try { indexChart.setDatasetVisibility(idx, visible); } catch (_) { /* older Chart.js */ }
 }
 
 // ── User tier ──

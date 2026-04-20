@@ -4,6 +4,8 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const { rateLimiter } = require('./rate-limiter');
+const { spawn } = require('child_process');
+const amd = require('./auto-market-data');
 
 const app = express();
 const PORT = process.env.PORT || 5006;
@@ -41,6 +43,10 @@ db.exec(`
   )
 `);
 db.exec('CREATE INDEX IF NOT EXISTS idx_auto_index_timestamp ON auto_index(timestamp)');
+
+// Auto Market Data: long-history monthly reference series
+amd.ensureSchema(db);
+amd.seedIfEmpty(db);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -525,6 +531,21 @@ app.get('/api/sp500-history', apiLimiter, requireAuth, overlayHandler('spx'));
 app.get('/api/gold-history',  apiLimiter, requireAuth, overlayHandler('gold'));
 app.get('/api/btc-history',   apiLimiter, requireAuth, overlayHandler('btc'));
 
+// Auto Market Data (monthly, back to 1997) — the primary long-history reference
+app.get('/api/auto-market-data', apiLimiter, requireAuth, (req, res) => {
+  try {
+    const since = getSince(req.query.range || 'MAX');
+    const readings = amd.getSeries(db, since);
+    res.json({ readings });
+  } catch (err) { res.status(500).json({ error: err.message, readings: [] }); }
+});
+
+// Optional: latest point for hero display
+app.get('/api/auto-market-data/latest', apiLimiter, requireAuth, (req, res) => {
+  try { res.json(amd.getLatest(db) || {}); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ---------------------------------------------------------------------------
 // Monthly rebalance with splice continuity
 // ---------------------------------------------------------------------------
@@ -651,6 +672,59 @@ setTimeout(async () => {
 
 // Weekly recurring poll
 setInterval(pollAllModels, WEEKLY_MS);
+
+// Auto Market Data: monthly refresh — try once at startup (delayed) and then daily thereafter.
+// Publisher releases new months on ~5th business day of the following month.
+async function parseXlsxViaPython(db, xlsxPath) {
+  return new Promise((resolve, reject) => {
+    const py = spawn('python3', [path.join(__dirname, 'scripts', 'parse_xlsx_to_stdin.py'), xlsxPath]);
+    let out = '', err = '';
+    py.stdout.on('data', d => out += d);
+    py.stderr.on('data', d => err += d);
+    py.on('close', code => {
+      if (code !== 0) return reject(new Error(`python exit ${code}: ${err}`));
+      try {
+        const rows = JSON.parse(out);
+        const now = new Date().toISOString();
+        const ins = db.prepare(`INSERT OR REPLACE INTO auto_market_data_monthly
+          (date, index_value, index_usd_sa, seasonal_factor, index_usd_nsa, mom_pct, yoy_pct, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+        let added = 0;
+        const tx = db.transaction(() => {
+          for (const r of rows) {
+            const date = String(r.date).slice(0, 10);
+            const idx = Number(r['Index (1/97 = 100)']);
+            if (!Number.isFinite(idx)) continue;
+            const before = db.prepare('SELECT 1 FROM auto_market_data_monthly WHERE date = ?').get(date);
+            ins.run(date, idx,
+              num(r['Manheim Index $ amount SA']),
+              num(r['Seasonal adjustment factor']),
+              num(r['Manheim Index $ amount NSA']),
+              num(r['SA Price % MoM'] ?? r['Index % MoM']),
+              num(r['Index % YoY'] ?? r['NSA Price % YoY']),
+              now);
+            if (!before) added++;
+          }
+        });
+        tx();
+        resolve(added);
+      } catch (e) { reject(e); }
+    });
+  });
+}
+function num(v) { if (v == null) return null; const n = Number(v); return Number.isFinite(n) ? n : null; }
+
+setTimeout(() => {
+  amd.refreshLatest(db, parseXlsxViaPython)
+    .then(msg => console.log(`[auto-market-data] startup refresh: ${msg}`))
+    .catch(e => console.warn(`[auto-market-data] startup refresh error: ${e.message}`));
+}, 15000);
+const DAY_MS = 24 * 3600 * 1000;
+setInterval(() => {
+  amd.refreshLatest(db, parseXlsxViaPython)
+    .then(msg => console.log(`[auto-market-data] daily refresh: ${msg}`))
+    .catch(e => console.warn(`[auto-market-data] daily refresh error: ${e.message}`));
+}, DAY_MS);
 
 // ---------------------------------------------------------------------------
 // Start server
