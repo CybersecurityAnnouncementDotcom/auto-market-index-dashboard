@@ -773,7 +773,7 @@ function initChart() {
     data: {
       datasets: [
         {
-          label: 'AUTO INDEX',
+          label: 'Auto Market Index',
           data: [],
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239,68,68,0.08)',
@@ -838,7 +838,7 @@ function initChart() {
           padding: 10,
           callbacks: {
             label: ctx => {
-              if (ctx.datasetIndex === 0) return ' AUTO INDEX: ' + fmt(ctx.parsed.y);
+              if (ctx.datasetIndex === 0) return ' Auto Market Index: ' + fmt(ctx.parsed.y);
               return ' ' + ctx.dataset.label + ': ' + (ctx.parsed.y != null ? '$' + Math.round(ctx.parsed.y).toLocaleString() : '—');
             },
           }
