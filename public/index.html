@@ -734,10 +734,17 @@ const overlayData  = { amd: [], spx: [], gold: [], btc: [], ami: [] };
 // ── Overlay helpers ──
 async function fetchOverlay(key, range) {
   try {
-    const epMap = { spx: 'sp500', gold: 'gold', btc: 'btc', amd: 'auto-market-data', ami: 'index' };
+    // AMD uses /api/auto-market-data (no -history suffix); others use /api/{ep}-history
+    if (key === 'amd') {
+      const r = await fetch(`/api/auto-market-data?range=${range}`, { credentials: 'include' });
+      if (!r.ok) return [];
+      const data = await r.json();
+      return data.readings || [];
+    }
+    const epMap = { spx: 'sp500', gold: 'gold', btc: 'btc', ami: 'index' };
     const ep = epMap[key];
     if (!ep) return [];
-    const r = await fetch(`/api/${ep}-history?range=${range}`);
+    const r = await fetch(`/api/${ep}-history?range=${range}`, { credentials: 'include' });
     if (!r.ok) return [];
     const data = await r.json();
     return data.readings || [];
