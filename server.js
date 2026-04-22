@@ -123,40 +123,245 @@ app.get('/api/user-tier', apiLimiter, requireAuth, (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// 25 models to track
+// 185 models across 10 segments (Auto_Market_Index_Basket_v1.0)
+// Segment slugs match methodology v2.1 + basket doc:
+// entry_suv, midsize_suv, fullsize_suv, luxury_suv,
+// compact_car, midsize_car, luxury_car, sports_car, pickup, van
 // ---------------------------------------------------------------------------
 const MODELS = [
-  // Pickups
-  { make: 'Ford',       model: 'F-150',           category: 'Pickup'  },
-  { make: 'Chevrolet',  model: 'Silverado 1500',   category: 'Pickup'  },
-  { make: 'Toyota',     model: 'Tacoma',            category: 'Pickup'  },
-  { make: 'Ram',        model: '1500',              category: 'Pickup'  },
-  { make: 'Toyota',     model: 'Tundra',            category: 'Pickup'  },
-  // Sedans
-  { make: 'Toyota',     model: 'Camry',             category: 'Sedan'   },
-  { make: 'Honda',      model: 'Accord',            category: 'Sedan'   },
-  { make: 'Toyota',     model: 'Corolla',           category: 'Sedan'   },
-  { make: 'Honda',      model: 'Civic',             category: 'Sedan'   },
-  { make: 'Nissan',     model: 'Altima',            category: 'Sedan'   },
-  { make: 'Hyundai',    model: 'Elantra',           category: 'Sedan'   },
-  // SUVs
-  { make: 'Toyota',     model: 'RAV4',              category: 'SUV'     },
-  { make: 'Honda',      model: 'CR-V',              category: 'SUV'     },
-  { make: 'Ford',       model: 'Explorer',          category: 'SUV'     },
-  { make: 'Chevrolet',  model: 'Equinox',           category: 'SUV'     },
-  { make: 'Toyota',     model: 'Highlander',        category: 'SUV'     },
-  { make: 'Jeep',       model: 'Grand Cherokee',    category: 'SUV'     },
-  { make: 'Ford',       model: 'Escape',            category: 'SUV'     },
-  { make: 'Honda',      model: 'Pilot',             category: 'SUV'     },
-  // Luxury
-  { make: 'Tesla',      model: 'Model 3',           category: 'Luxury'  },
-  { make: 'Tesla',      model: 'Model Y',           category: 'Luxury'  },
-  { make: 'BMW',        model: '3 Series',          category: 'Luxury'  },
-  { make: 'Mercedes-Benz', model: 'C-Class',        category: 'Luxury'  },
-  // Minivan / Commercial
-  { make: 'Honda',      model: 'Odyssey',           category: 'Minivan' },
-  { make: 'Ford',       model: 'Transit',           category: 'Commercial' },
+  // Entry SUV (25)
+  { make: 'Honda', model: 'CR-V', segment: 'entry_suv' },
+  { make: 'Toyota', model: 'RAV4', segment: 'entry_suv' },
+  { make: 'Ford', model: 'Escape', segment: 'entry_suv' },
+  { make: 'Chevrolet', model: 'Equinox', segment: 'entry_suv' },
+  { make: 'Nissan', model: 'Rogue', segment: 'entry_suv' },
+  { make: 'Kia', model: 'Sportage', segment: 'entry_suv' },
+  { make: 'Hyundai', model: 'Tucson', segment: 'entry_suv' },
+  { make: 'Subaru', model: 'Forester', segment: 'entry_suv' },
+  { make: 'Mazda', model: 'CX-5', segment: 'entry_suv' },
+  { make: 'Jeep', model: 'Compass', segment: 'entry_suv' },
+  { make: 'Jeep', model: 'Cherokee', segment: 'entry_suv' },
+  { make: 'Honda', model: 'HR-V', segment: 'entry_suv' },
+  { make: 'Toyota', model: 'Corolla Cross', segment: 'entry_suv' },
+  { make: 'Hyundai', model: 'Kona', segment: 'entry_suv' },
+  { make: 'Kia', model: 'Seltos', segment: 'entry_suv' },
+  { make: 'Subaru', model: 'Crosstrek', segment: 'entry_suv' },
+  { make: 'Mazda', model: 'CX-30', segment: 'entry_suv' },
+  { make: 'Nissan', model: 'Kicks', segment: 'entry_suv' },
+  { make: 'Buick', model: 'Encore', segment: 'entry_suv' },
+  { make: 'Chevrolet', model: 'Trax', segment: 'entry_suv' },
+  { make: 'Ford', model: 'Bronco Sport', segment: 'entry_suv' },
+  { make: 'Jeep', model: 'Renegade', segment: 'entry_suv' },
+  { make: 'Volkswagen', model: 'Taos', segment: 'entry_suv' },
+  { make: 'Mitsubishi', model: 'Outlander Sport', segment: 'entry_suv' },
+  { make: 'Tesla', model: 'Model Y', segment: 'entry_suv' },
+  // Midsize SUV (25)
+  { make: 'Toyota', model: 'Highlander', segment: 'midsize_suv' },
+  { make: 'Honda', model: 'Pilot', segment: 'midsize_suv' },
+  { make: 'Jeep', model: 'Grand Cherokee', segment: 'midsize_suv' },
+  { make: 'Ford', model: 'Explorer', segment: 'midsize_suv' },
+  { make: 'Chevrolet', model: 'Traverse', segment: 'midsize_suv' },
+  { make: 'Nissan', model: 'Pathfinder', segment: 'midsize_suv' },
+  { make: 'Kia', model: 'Sorento', segment: 'midsize_suv' },
+  { make: 'Kia', model: 'Telluride', segment: 'midsize_suv' },
+  { make: 'Hyundai', model: 'Palisade', segment: 'midsize_suv' },
+  { make: 'Hyundai', model: 'Santa Fe', segment: 'midsize_suv' },
+  { make: 'Nissan', model: 'Murano', segment: 'midsize_suv' },
+  { make: 'Honda', model: 'Passport', segment: 'midsize_suv' },
+  { make: 'Volkswagen', model: 'Atlas', segment: 'midsize_suv' },
+  { make: 'Mazda', model: 'CX-9', segment: 'midsize_suv' },
+  { make: 'Mazda', model: 'CX-90', segment: 'midsize_suv' },
+  { make: 'Subaru', model: 'Ascent', segment: 'midsize_suv' },
+  { make: 'Ford', model: 'Edge', segment: 'midsize_suv' },
+  { make: 'Chevrolet', model: 'Blazer', segment: 'midsize_suv' },
+  { make: 'GMC', model: 'Acadia', segment: 'midsize_suv' },
+  { make: 'Buick', model: 'Enclave', segment: 'midsize_suv' },
+  { make: 'Dodge', model: 'Durango', segment: 'midsize_suv' },
+  { make: 'Toyota', model: '4Runner', segment: 'midsize_suv' },
+  { make: 'Jeep', model: 'Wrangler', segment: 'midsize_suv' },
+  { make: 'Jeep', model: 'Wrangler 4xe', segment: 'midsize_suv' },
+  { make: 'Toyota', model: 'Grand Highlander', segment: 'midsize_suv' },
+  // Fullsize SUV (15)
+  { make: 'Chevrolet', model: 'Tahoe', segment: 'fullsize_suv' },
+  { make: 'Chevrolet', model: 'Suburban', segment: 'fullsize_suv' },
+  { make: 'Ford', model: 'Expedition', segment: 'fullsize_suv' },
+  { make: 'Ford', model: 'Expedition MAX', segment: 'fullsize_suv' },
+  { make: 'GMC', model: 'Yukon', segment: 'fullsize_suv' },
+  { make: 'GMC', model: 'Yukon XL', segment: 'fullsize_suv' },
+  { make: 'Toyota', model: 'Sequoia', segment: 'fullsize_suv' },
+  { make: 'Nissan', model: 'Armada', segment: 'fullsize_suv' },
+  { make: 'Jeep', model: 'Wagoneer', segment: 'fullsize_suv' },
+  { make: 'Jeep', model: 'Grand Wagoneer', segment: 'fullsize_suv' },
+  { make: 'Lincoln', model: 'Navigator', segment: 'fullsize_suv' },
+  { make: 'Cadillac', model: 'Escalade', segment: 'fullsize_suv' },
+  { make: 'Cadillac', model: 'Escalade ESV', segment: 'fullsize_suv' },
+  { make: 'Infiniti', model: 'QX80', segment: 'fullsize_suv' },
+  { make: 'Lexus', model: 'LX', segment: 'fullsize_suv' },
+  // Luxury SUV (20)
+  { make: 'BMW', model: 'X5', segment: 'luxury_suv' },
+  { make: 'BMW', model: 'X3', segment: 'luxury_suv' },
+  { make: 'BMW', model: 'X7', segment: 'luxury_suv' },
+  { make: 'Mercedes-Benz', model: 'GLE', segment: 'luxury_suv' },
+  { make: 'Mercedes-Benz', model: 'GLC', segment: 'luxury_suv' },
+  { make: 'Mercedes-Benz', model: 'GLS', segment: 'luxury_suv' },
+  { make: 'Lexus', model: 'RX', segment: 'luxury_suv' },
+  { make: 'Lexus', model: 'NX', segment: 'luxury_suv' },
+  { make: 'Lexus', model: 'GX', segment: 'luxury_suv' },
+  { make: 'Audi', model: 'Q5', segment: 'luxury_suv' },
+  { make: 'Audi', model: 'Q7', segment: 'luxury_suv' },
+  { make: 'Audi', model: 'Q8', segment: 'luxury_suv' },
+  { make: 'Acura', model: 'MDX', segment: 'luxury_suv' },
+  { make: 'Acura', model: 'RDX', segment: 'luxury_suv' },
+  { make: 'Volvo', model: 'XC90', segment: 'luxury_suv' },
+  { make: 'Volvo', model: 'XC60', segment: 'luxury_suv' },
+  { make: 'Porsche', model: 'Cayenne', segment: 'luxury_suv' },
+  { make: 'Porsche', model: 'Macan', segment: 'luxury_suv' },
+  { make: 'Range Rover', model: 'Sport', segment: 'luxury_suv' },
+  { make: 'Genesis', model: 'GV70', segment: 'luxury_suv' },
+  // Compact Car (15)
+  { make: 'Honda', model: 'Civic', segment: 'compact_car' },
+  { make: 'Toyota', model: 'Corolla', segment: 'compact_car' },
+  { make: 'Hyundai', model: 'Elantra', segment: 'compact_car' },
+  { make: 'Nissan', model: 'Sentra', segment: 'compact_car' },
+  { make: 'Mazda', model: 'Mazda3', segment: 'compact_car' },
+  { make: 'Kia', model: 'Forte', segment: 'compact_car' },
+  { make: 'Volkswagen', model: 'Jetta', segment: 'compact_car' },
+  { make: 'Subaru', model: 'Impreza', segment: 'compact_car' },
+  { make: 'Chevrolet', model: 'Trailblazer', segment: 'compact_car' },
+  { make: 'Honda', model: 'Fit', segment: 'compact_car' },
+  { make: 'Toyota', model: 'Prius', segment: 'compact_car' },
+  { make: 'Kia', model: 'Rio', segment: 'compact_car' },
+  { make: 'Hyundai', model: 'Accent', segment: 'compact_car' },
+  { make: 'Nissan', model: 'Versa', segment: 'compact_car' },
+  { make: 'Mitsubishi', model: 'Mirage', segment: 'compact_car' },
+  // Midsize Car (20)
+  { make: 'Toyota', model: 'Camry', segment: 'midsize_car' },
+  { make: 'Honda', model: 'Accord', segment: 'midsize_car' },
+  { make: 'Nissan', model: 'Altima', segment: 'midsize_car' },
+  { make: 'Hyundai', model: 'Sonata', segment: 'midsize_car' },
+  { make: 'Kia', model: 'K5', segment: 'midsize_car' },
+  { make: 'Chevrolet', model: 'Malibu', segment: 'midsize_car' },
+  { make: 'Subaru', model: 'Legacy', segment: 'midsize_car' },
+  { make: 'Mazda', model: 'Mazda6', segment: 'midsize_car' },
+  { make: 'Tesla', model: 'Model 3', segment: 'midsize_car' },
+  { make: 'Volkswagen', model: 'Passat', segment: 'midsize_car' },
+  { make: 'Volkswagen', model: 'Arteon', segment: 'midsize_car' },
+  { make: 'Toyota', model: 'Avalon', segment: 'midsize_car' },
+  { make: 'Chrysler', model: '300', segment: 'midsize_car' },
+  { make: 'Dodge', model: 'Charger', segment: 'midsize_car' },
+  { make: 'Nissan', model: 'Maxima', segment: 'midsize_car' },
+  { make: 'Hyundai', model: 'Elantra GT', segment: 'midsize_car' },
+  { make: 'Subaru', model: 'Outback', segment: 'midsize_car' },
+  { make: 'Buick', model: 'Regal', segment: 'midsize_car' },
+  { make: 'Ford', model: 'Fusion', segment: 'midsize_car' },
+  { make: 'Chevrolet', model: 'Cruze', segment: 'midsize_car' },
+  // Luxury Car (15)
+  { make: 'BMW', model: '3 Series', segment: 'luxury_car' },
+  { make: 'BMW', model: '5 Series', segment: 'luxury_car' },
+  { make: 'BMW', model: '7 Series', segment: 'luxury_car' },
+  { make: 'Mercedes-Benz', model: 'C-Class', segment: 'luxury_car' },
+  { make: 'Mercedes-Benz', model: 'E-Class', segment: 'luxury_car' },
+  { make: 'Mercedes-Benz', model: 'S-Class', segment: 'luxury_car' },
+  { make: 'Audi', model: 'A4', segment: 'luxury_car' },
+  { make: 'Audi', model: 'A6', segment: 'luxury_car' },
+  { make: 'Audi', model: 'A8', segment: 'luxury_car' },
+  { make: 'Lexus', model: 'ES', segment: 'luxury_car' },
+  { make: 'Lexus', model: 'IS', segment: 'luxury_car' },
+  { make: 'Lexus', model: 'LS', segment: 'luxury_car' },
+  { make: 'Acura', model: 'TLX', segment: 'luxury_car' },
+  { make: 'Infiniti', model: 'Q50', segment: 'luxury_car' },
+  { make: 'Genesis', model: 'G70', segment: 'luxury_car' },
+  // Sports Car (10)
+  { make: 'Ford', model: 'Mustang', segment: 'sports_car' },
+  { make: 'Chevrolet', model: 'Camaro', segment: 'sports_car' },
+  { make: 'Dodge', model: 'Challenger', segment: 'sports_car' },
+  { make: 'Chevrolet', model: 'Corvette', segment: 'sports_car' },
+  { make: 'BMW', model: 'Z4', segment: 'sports_car' },
+  { make: 'Mazda', model: 'MX-5 Miata', segment: 'sports_car' },
+  { make: 'Porsche', model: '911', segment: 'sports_car' },
+  { make: 'Porsche', model: 'Cayman', segment: 'sports_car' },
+  { make: 'Subaru', model: 'BRZ', segment: 'sports_car' },
+  { make: 'Toyota', model: 'GR Supra', segment: 'sports_car' },
+  // Pickup (30)
+  { make: 'Ford', model: 'F-150', segment: 'pickup' },
+  { make: 'Ford', model: 'F-250', segment: 'pickup' },
+  { make: 'Ford', model: 'F-350', segment: 'pickup' },
+  { make: 'Ford', model: 'Ranger', segment: 'pickup' },
+  { make: 'Ford', model: 'Maverick', segment: 'pickup' },
+  { make: 'Chevrolet', model: 'Silverado 1500', segment: 'pickup' },
+  { make: 'Chevrolet', model: 'Silverado 2500', segment: 'pickup' },
+  { make: 'Chevrolet', model: 'Silverado 3500', segment: 'pickup' },
+  { make: 'Chevrolet', model: 'Colorado', segment: 'pickup' },
+  { make: 'GMC', model: 'Sierra 1500', segment: 'pickup' },
+  { make: 'GMC', model: 'Sierra 2500', segment: 'pickup' },
+  { make: 'GMC', model: 'Canyon', segment: 'pickup' },
+  { make: 'Ram', model: '1500', segment: 'pickup' },
+  { make: 'Ram', model: '2500', segment: 'pickup' },
+  { make: 'Ram', model: '3500', segment: 'pickup' },
+  { make: 'Toyota', model: 'Tacoma', segment: 'pickup' },
+  { make: 'Toyota', model: 'Tundra', segment: 'pickup' },
+  { make: 'Nissan', model: 'Titan', segment: 'pickup' },
+  { make: 'Nissan', model: 'Frontier', segment: 'pickup' },
+  { make: 'Honda', model: 'Ridgeline', segment: 'pickup' },
+  { make: 'Jeep', model: 'Gladiator', segment: 'pickup' },
+  { make: 'Hyundai', model: 'Santa Cruz', segment: 'pickup' },
+  { make: 'Ford', model: 'F-150 Lightning', segment: 'pickup' },
+  { make: 'Rivian', model: 'R1T', segment: 'pickup' },
+  { make: 'Tesla', model: 'Cybertruck', segment: 'pickup' },
+  { make: 'Chevrolet', model: 'Silverado EV', segment: 'pickup' },
+  { make: 'GMC', model: 'Hummer EV', segment: 'pickup' },
+  { make: 'Ford', model: 'F-150 Raptor', segment: 'pickup' },
+  { make: 'Ram', model: '1500 TRX', segment: 'pickup' },
+  { make: 'Toyota', model: 'Tundra TRD', segment: 'pickup' },
+  // Van (10)
+  { make: 'Honda', model: 'Odyssey', segment: 'van' },
+  { make: 'Toyota', model: 'Sienna', segment: 'van' },
+  { make: 'Chrysler', model: 'Pacifica', segment: 'van' },
+  { make: 'Kia', model: 'Carnival', segment: 'van' },
+  { make: 'Chrysler', model: 'Grand Caravan', segment: 'van' },
+  { make: 'Dodge', model: 'Grand Caravan', segment: 'van' },
+  { make: 'Ford', model: 'Transit', segment: 'van' },
+  { make: 'Ford', model: 'Transit Connect', segment: 'van' },
+  { make: 'Mercedes-Benz', model: 'Metris', segment: 'van' },
+  { make: 'Nissan', model: 'NV200', segment: 'van' },
 ];
+
+// ---------------------------------------------------------------------------
+// Segment configuration (methodology v2.1 §5.1 + §5.3)
+// Composite weights renormalized to sum to 1.0 (Sports Car excluded from
+// composite; included only in Car Total via CAR_SUBWEIGHTS).
+// ---------------------------------------------------------------------------
+const SEGMENT_LABELS = {
+  entry_suv:    'Entry SUV',
+  midsize_suv:  'Midsize SUV',
+  fullsize_suv: 'Fullsize SUV',
+  luxury_suv:   'Luxury SUV',
+  compact_car:  'Compact Car',
+  midsize_car:  'Midsize Car',
+  luxury_car:   'Luxury Car',
+  sports_car:   'Sports Car',
+  pickup:       'Pickup',
+  van:          'Van',
+};
+
+// SUV sub-segment → SUV Total weights (sum to 1.0)
+const SUV_SUBWEIGHTS = { entry_suv: 0.40, midsize_suv: 0.35, fullsize_suv: 0.15, luxury_suv: 0.10 };
+// Car sub-segment → Car Total weights (sum to 1.0)
+const CAR_SUBWEIGHTS = { compact_car: 0.40, midsize_car: 0.45, luxury_car: 0.10, sports_car: 0.05 };
+// Composite AMI weights (renormalized; sum to 1.0; sports excluded from composite)
+const AMI_COMPOSITE_WEIGHTS = {
+  suv_total: 0.50 / 0.95, // 0.5263
+  car_total: 0.25 / 0.95, // 0.2632
+  pickup:    0.16 / 0.95, // 0.1684
+  van:       0.04 / 0.95, // 0.0421
+};
+
+function median(arr) {
+  const vals = arr.filter(v => Number.isFinite(v) && v > 0).sort((a, b) => a - b);
+  if (vals.length === 0) return null;
+  const mid = Math.floor(vals.length / 2);
+  return vals.length % 2 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+}
 
 // ---------------------------------------------------------------------------
 // Marketcheck API helper
@@ -201,14 +406,23 @@ function fetchMarketcheck(make, model) {
 }
 
 // ---------------------------------------------------------------------------
-// Poll all 25 models sequentially (respects 5 calls/sec limit with delay)
+// Poll all models sequentially (respects 5 calls/sec limit with delay)
+// Computes per-segment median, SUV Total, Car Total, and composite AMI.
 // ---------------------------------------------------------------------------
 async function pollAllModels() {
-  console.log(`[${new Date().toISOString()}] Starting weekly auto market poll (${MODELS.length} models)...`);
+  console.log(`[${new Date().toISOString()}] Starting monthly auto market poll (${MODELS.length} models)...`);
   const timestamp = new Date().toISOString();
-  const medians = [];
+
+  // Collect per-segment medians from only ACTIVE, non-benched models
+  const activeSet = new Set(
+    db.prepare('SELECT make, model FROM model_status WHERE is_active = 1 AND is_bench = 0')
+      .all().map(r => `${r.make}|${r.model}`)
+  );
+  const bySegment = {}; // slug -> [median_price, ...]
+  for (const slug of Object.keys(SEGMENT_LABELS)) bySegment[slug] = [];
 
   for (const m of MODELS) {
+    if (!activeSet.has(`${m.make}|${m.model}`)) continue; // skip dropped/benched
     try {
       const stats = await fetchMarketcheck(m.make, m.model);
       db.prepare(`
@@ -216,9 +430,9 @@ async function pollAllModels() {
         VALUES (?, ?, ?, ?, ?, ?)
       `).run(timestamp, m.make, m.model, stats.mean_price, stats.median_price, stats.listing_count);
 
-      console.log(`  ${m.make} ${m.model}: median=$${stats.median_price?.toLocaleString()}, count=${stats.listing_count}`);
+      console.log(`  [${m.segment}] ${m.make} ${m.model}: median=$${stats.median_price?.toLocaleString()}, count=${stats.listing_count}`);
       if (stats.median_price && stats.median_price > 0) {
-        medians.push(stats.median_price);
+        bySegment[m.segment].push(stats.median_price);
       }
     } catch(err) {
       console.error(`  ERROR ${m.make} ${m.model}:`, err.message);
@@ -228,13 +442,62 @@ async function pollAllModels() {
     await new Promise(r => setTimeout(r, 300));
   }
 
-  // Compute AUTO INDEX = average of all available medians
-  if (medians.length > 0) {
-    const indexValue = medians.reduce((a, b) => a + b, 0) / medians.length;
-    db.prepare('INSERT INTO auto_index (timestamp, index_value) VALUES (?, ?)').run(timestamp, Math.round(indexValue * 100) / 100);
-    console.log(`[${new Date().toISOString()}] AUTO INDEX: $${Math.round(indexValue).toLocaleString()} (from ${medians.length} models)`);
+  // Per-segment median (unweighted across basket models in that segment)
+  const segMedian = {};
+  for (const slug of Object.keys(SEGMENT_LABELS)) {
+    segMedian[slug] = median(bySegment[slug]);
+  }
+
+  // Sub-totals (weighted combinations of segment medians)
+  function weightedSum(parts) {
+    let num = 0, w = 0;
+    for (const [slug, weight] of Object.entries(parts)) {
+      const v = segMedian[slug];
+      if (Number.isFinite(v) && v > 0) { num += v * weight; w += weight; }
+    }
+    return w > 0 ? num / w : null;
+  }
+
+  const suvTotal = weightedSum(SUV_SUBWEIGHTS);
+  const carTotal = weightedSum(CAR_SUBWEIGHTS);
+
+  // Composite AMI (sports excluded from composite per §5.1)
+  const compositeParts = {};
+  if (suvTotal != null) compositeParts.suv_total = suvTotal;
+  if (carTotal != null) compositeParts.car_total = carTotal;
+  if (segMedian.pickup != null) compositeParts.pickup = segMedian.pickup;
+  if (segMedian.van != null)    compositeParts.van = segMedian.van;
+
+  let compositeNum = 0, compositeW = 0;
+  for (const [key, val] of Object.entries(compositeParts)) {
+    const w = AMI_COMPOSITE_WEIGHTS[key];
+    compositeNum += val * w;
+    compositeW += w;
+  }
+  const composite = compositeW > 0 ? compositeNum / compositeW : null;
+
+  // Write per-segment rows to auto_segment_history
+  const insSeg = db.prepare(`INSERT INTO auto_segment_history
+    (timestamp, segment, median_price, model_count, source)
+    VALUES (?, ?, ?, ?, 'live')`);
+  const segTx = db.transaction(() => {
+    for (const slug of Object.keys(SEGMENT_LABELS)) {
+      insSeg.run(timestamp, slug, segMedian[slug], bySegment[slug].length);
+    }
+    // Sub-totals and composite stored as pseudo-segments for unified querying
+    if (suvTotal != null)  insSeg.run(timestamp, 'suv_total', Math.round(suvTotal * 100) / 100, null);
+    if (carTotal != null)  insSeg.run(timestamp, 'car_total', Math.round(carTotal * 100) / 100, null);
+    if (composite != null) insSeg.run(timestamp, 'ami_composite', Math.round(composite * 100) / 100, null);
+  });
+  segTx();
+
+  // Legacy auto_index (keep writing for backwards compat)
+  if (composite != null) {
+    db.prepare('INSERT INTO auto_index (timestamp, index_value) VALUES (?, ?)')
+      .run(timestamp, Math.round(composite * 100) / 100);
+    console.log(`[${new Date().toISOString()}] AMI composite: $${Math.round(composite).toLocaleString()} | SUV=$${Math.round(suvTotal||0).toLocaleString()} Car=$${Math.round(carTotal||0).toLocaleString()} Pickup=$${Math.round(segMedian.pickup||0).toLocaleString()} Van=$${Math.round(segMedian.van||0).toLocaleString()}`);
   } else {
-    console.warn('[poll] No medians collected — AUTO INDEX not stored');
+    console.warn('[poll] No composite produced — insufficient segment data');
   }
 }
 
@@ -283,7 +546,8 @@ app.get('/api/current', apiLimiter, requireAuth, (req, res) => {
       return {
         make: m.make,
         model: m.model,
-        category: m.category,
+        segment: m.segment,
+        segment_label: SEGMENT_LABELS[m.segment] || m.segment,
         median_price: latest ? latest.median_price : null,
         mean_price: latest ? latest.mean_price : null,
         listing_count: latest ? latest.listing_count : null,
@@ -334,6 +598,67 @@ app.get('/api/index-history', apiLimiter, requireAuth, (req, res) => {
     `).all(since);
 
     res.json({ readings });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/segment-history?range=1M|3M|1Y|5Y|MAX[&segment=<slug>]
+// Returns per-segment median series. With ?segment=, returns a single series.
+// Without, returns all segments (10 real + suv_total + car_total + ami_composite).
+// Stitches live + Manheim-backfill from auto_segment_history, applying
+// splice_factor to backfill rows so the two series are continuous at the
+// AMD→AMI cutover (methodology v2.1 §9.2).
+// ---------------------------------------------------------------------------
+app.get('/api/segment-history', apiLimiter, requireAuth, (req, res) => {
+  try {
+    const range = req.query.range || 'MAX';
+    const since = getSince(range);
+    const seg = req.query.segment || null;
+
+    // Load splice factors once (segment -> factor)
+    const splices = {};
+    for (const r of db.prepare('SELECT segment, splice_factor FROM segment_splice_factors').all()) {
+      splices[r.segment] = r.splice_factor;
+    }
+
+    const params = [since];
+    let sql = `SELECT timestamp, segment, median_price, model_count, source
+               FROM auto_segment_history WHERE timestamp >= ?`;
+    if (seg) { sql += ' AND segment = ?'; params.push(seg); }
+    sql += ' ORDER BY timestamp ASC';
+
+    const rows = db.prepare(sql).all(...params);
+
+    // Apply splice to backfill rows
+    const bySegment = {};
+    for (const r of rows) {
+      const k = r.segment;
+      if (!bySegment[k]) bySegment[k] = [];
+      let value = r.median_price;
+      if (r.source === 'manheim' && splices[k] != null && value != null) {
+        value = Math.round(value * splices[k] * 100) / 100;
+      }
+      bySegment[k].push({
+        timestamp: r.timestamp,
+        value,
+        model_count: r.model_count,
+        source: r.source,
+      });
+    }
+
+    if (seg) {
+      res.json({ segment: seg, label: SEGMENT_LABELS[seg] || seg, readings: bySegment[seg] || [] });
+    } else {
+      res.json({
+        segments: Object.keys(bySegment).map(slug => ({
+          segment: slug,
+          label: SEGMENT_LABELS[slug] || slug,
+          readings: bySegment[slug],
+        })),
+      });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -563,6 +888,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS model_status (
     make TEXT NOT NULL,
     model TEXT NOT NULL,
+    segment TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
     is_bench INTEGER NOT NULL DEFAULT 0,
     dropped_at TEXT,
@@ -573,17 +899,76 @@ db.exec(`
     id INTEGER PRIMARY KEY CHECK (id = 1),
     scale REAL NOT NULL DEFAULT 1.0
   );
+  -- Per-segment history. Stores live monthly polls + Manheim-derived
+  -- backfill (segment source = 'manheim' vs 'live'). Also stores pseudo-
+  -- segments 'suv_total', 'car_total', 'ami_composite' for unified querying.
+  CREATE TABLE IF NOT EXISTS auto_segment_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,
+    segment TEXT NOT NULL,
+    median_price REAL,
+    model_count INTEGER,
+    source TEXT NOT NULL DEFAULT 'live'
+  );
+  CREATE INDEX IF NOT EXISTS idx_auto_seg_hist_ts ON auto_segment_history(timestamp);
+  CREATE INDEX IF NOT EXISTS idx_auto_seg_hist_seg ON auto_segment_history(segment);
+  -- Per-segment splice factor (methodology v2.1 §9.2). Multiplies backfill
+  -- series to align continuity with the first live poll.
+  CREATE TABLE IF NOT EXISTS segment_splice_factors (
+    segment TEXT PRIMARY KEY,
+    splice_factor REAL NOT NULL,
+    backfill_last_value REAL,
+    live_first_value REAL,
+    computed_at TEXT NOT NULL
+  );
+  -- Change log for basket edits (add/drop/reclassify models)
+  CREATE TABLE IF NOT EXISTS auto_basket_changelog (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    changed_at TEXT NOT NULL,
+    action TEXT NOT NULL,   -- 'add' | 'drop' | 'reclassify' | 'bench' | 'unbench'
+    make TEXT NOT NULL,
+    model TEXT NOT NULL,
+    old_segment TEXT,
+    new_segment TEXT,
+    reason TEXT
+  );
 `);
 
-// Seed model_status from MODELS list on first run (all active, none benched)
+// Migration: add 'segment' column to model_status if missing (idempotent)
+(function migrateModelStatusSegment() {
+  const cols = db.prepare("PRAGMA table_info(model_status)").all();
+  const hasSegment = cols.some(c => c.name === 'segment');
+  if (!hasSegment) {
+    db.exec('ALTER TABLE model_status ADD COLUMN segment TEXT');
+    console.log('[auto] migration: added model_status.segment column');
+  }
+})();
+
+// Seed / refresh model_status from MODELS list.
+// On first run: insert all 185 rows as active, non-benched.
+// On subsequent runs: insert any MODELS missing from the table; refresh
+// segment for existing rows (keeps segment column in sync with basket doc).
 (function seedModelStatus() {
-  const existing = db.prepare('SELECT COUNT(*) AS c FROM model_status').get().c;
-  if (existing > 0) return;
-  const ins = db.prepare('INSERT INTO model_status (make, model, is_active, is_bench) VALUES (?, ?, 1, 0)');
-  const tx = db.transaction(() => { for (const m of MODELS) ins.run(m.make, m.model); });
+  const ins = db.prepare(`INSERT OR IGNORE INTO model_status
+    (make, model, segment, is_active, is_bench) VALUES (?, ?, ?, 1, 0)`);
+  const updSeg = db.prepare('UPDATE model_status SET segment = ? WHERE make = ? AND model = ?');
+  let added = 0, updated = 0;
+  const tx = db.transaction(() => {
+    for (const m of MODELS) {
+      const existed = db.prepare('SELECT segment FROM model_status WHERE make = ? AND model = ?').get(m.make, m.model);
+      if (!existed) {
+        ins.run(m.make, m.model, m.segment);
+        added++;
+      } else if (existed.segment !== m.segment) {
+        updSeg.run(m.segment, m.make, m.model);
+        updated++;
+      }
+    }
+  });
   tx();
   db.prepare('INSERT OR IGNORE INTO index_scale (id, scale) VALUES (1, 1.0)').run();
-  console.log(`[auto] seeded model_status with ${MODELS.length} models`);
+  const total = db.prepare('SELECT COUNT(*) AS c FROM model_status').get().c;
+  console.log(`[auto] model_status: ${total} rows total (added=${added}, segment-updated=${updated}, basket size=${MODELS.length})`);
 })();
 
 app.get('/api/rebalance-history', apiLimiter, requireAuth, (req, res) => {
@@ -654,12 +1039,15 @@ setInterval(async () => {
 }, 60 * 60 * 1000);
 
 // ---------------------------------------------------------------------------
-// Scheduling: weekly poll (every 7 days)
-// Startup: poll immediately if auto_prices table is empty
+// Scheduling: MONTHLY poll (first UTC day of each month at 03:00 UTC).
+// Also triggers on startup if auto_prices is empty.
+// Note: monthlyRebalance() upstream handles drop-zero-volume + splice on the
+// same day-1 hour-3 cadence; scheduling here intentionally aligns with that
+// so both run in the same window.
 // ---------------------------------------------------------------------------
-const WEEKLY_MS = 7 * 24 * 3600 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
 
-// Startup poll if DB is empty
+// Startup poll if DB is empty (bootstrap only).
 setTimeout(async () => {
   const count = db.prepare('SELECT COUNT(*) as cnt FROM auto_prices').get().cnt;
   if (count === 0) {
@@ -670,8 +1058,20 @@ setTimeout(async () => {
   }
 }, 5000);
 
-// Weekly recurring poll
-setInterval(pollAllModels, WEEKLY_MS);
+// Monthly recurring poll: check hourly; fire once when UTC-day=1 and hour=4
+// (one hour after monthlyRebalance so we don't race). Keyed by year-month to
+// guarantee single execution.
+let lastMonthlyPollKey = null;
+setInterval(async () => {
+  const now = new Date();
+  if (now.getUTCDate() === 1 && now.getUTCHours() === 4) {
+    const key = `${now.getUTCFullYear()}-${now.getUTCMonth()}`;
+    if (lastMonthlyPollKey !== key) {
+      lastMonthlyPollKey = key;
+      try { await pollAllModels(); } catch (e) { console.error('[auto] monthly poll err:', e); }
+    }
+  }
+}, HOUR_MS);
 
 // Auto Market Data: monthly refresh — try once at startup (delayed) and then daily thereafter.
 // Publisher releases new months on ~5th business day of the following month.
