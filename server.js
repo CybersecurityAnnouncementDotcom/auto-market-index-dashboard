@@ -856,16 +856,25 @@ app.get('/api/sp500-history', apiLimiter, requireAuth, overlayHandler('spx'));
 app.get('/api/gold-history',  apiLimiter, requireAuth, overlayHandler('gold'));
 app.get('/api/btc-history',   apiLimiter, requireAuth, overlayHandler('btc'));
 
-// Auto Market Data (monthly, back to 1997) — the primary long-history reference
+// Auto Market Data (monthly, 3 lines: Overall / EV / Non-EV, base 1000 at Jan 2020)
+// Returns { overall: [...], ev: [...], nonev: [...] } — each an array of
+// { timestamp, value } points. Frontend toggles which lines are visible.
 app.get('/api/auto-market-data', apiLimiter, requireAuth, (req, res) => {
   try {
     const since = getSince(req.query.range || 'MAX');
-    const readings = amd.getSeries(db, since);
-    res.json({ readings });
-  } catch (err) { res.status(500).json({ error: err.message, readings: [] }); }
+    const series = amd.getSeries(db, since);
+    // Back-compat: legacy clients expect `readings` (overall line only).
+    res.json({
+      overall: series.overall,
+      ev:      series.ev,
+      nonev:   series.nonev,
+      readings: series.overall,
+      base: { value: 1000, date: '2020-01-01' },
+    });
+  } catch (err) { res.status(500).json({ error: err.message, overall: [], ev: [], nonev: [], readings: [] }); }
 });
 
-// Optional: latest point for hero display
+// Latest point per line for hero display
 app.get('/api/auto-market-data/latest', apiLimiter, requireAuth, (req, res) => {
   try { res.json(amd.getLatest(db) || {}); }
   catch (err) { res.status(500).json({ error: err.message }); }
