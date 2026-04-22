@@ -262,7 +262,45 @@
     .overlay-btn.active[data-key="gold"] { background: rgba(255,215,0,0.15);  color: #ffd700; border-color: #ffd700; }
     .overlay-btn.active[data-key="btc"]  { background: rgba(247,147,26,0.15); color: #f7931a; border-color: #f7931a; }
     .overlay-btn.active[data-key="amd"]  { background: rgba(20,184,166,0.18); color: #14b8a6; border-color: #14b8a6; }
-    .overlay-btn.active[data-key="ami"]  { background: rgba(239,68,68,0.18); color: #ef4444; border-color: #ef4444; }
+
+    /* MostLiked per-line toggle pills (below the chart) */
+    .ml-line-toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 4px 20px 16px;
+    }
+    .ml-line-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ml-line-btn::before {
+      content: '';
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--ml-color, #999);
+      opacity: 0.35;
+    }
+    .ml-line-btn.active::before { opacity: 1; }
+    .ml-line-btn:hover { color: var(--text); border-color: var(--ml-color, var(--primary)); }
+    .ml-line-btn.active {
+      color: var(--text);
+      border-color: var(--ml-color, var(--primary));
+      background: color-mix(in srgb, var(--ml-color, var(--primary)) 14%, transparent);
+    }
 
     .chart-container {
       position: relative;
@@ -524,10 +562,10 @@
         <div class="hero-left">
           <div class="hero-label">
             <span class="pulse-dot"></span>
-            Weekly Updated
+            Monthly Updated
           </div>
           <div class="hero-title">Auto Market Index</div>
-          <div class="hero-subtitle">25 popular US models tracked weekly</div>
+          <div class="hero-subtitle">185 popular US models tracked monthly</div>
           <div class="hero-value" id="heroValue">—</div>
           <div class="hero-meta">
             <span class="change-pill neutral" id="changePill">—</span>
@@ -536,7 +574,7 @@
         </div>
         <div class="hero-right">
           <div class="hero-timestamp" id="heroTimestamp">—</div>
-          <div class="models-count" id="modelsCount">25 models</div>
+          <div class="models-count" id="modelsCount">185 models</div>
         </div>
       </div>
     </section>
@@ -545,9 +583,8 @@
     <section class="chart-section">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Auto Market Data — Historical</span>
+          <span class="card-title">Auto Market Data</span>
           <div class="range-toggles" id="rangeToggles">
-            <button class="range-btn" data-range="1W">1W</button>
             <button class="range-btn" data-range="1M">1M</button>
             <button class="range-btn" data-range="1Y">1Y</button>
             <button class="range-btn active" data-range="MAX">MAX</button>
@@ -555,7 +592,7 @@
             <button class="overlay-btn active" data-key="spx"  title="S&amp;P 500 overlay">SPX</button>
             <button class="overlay-btn active" data-key="gold" title="Gold overlay">GLD</button>
             <button class="overlay-btn active" data-key="btc"  title="Bitcoin overlay">BTC</button>
-            <button class="overlay-btn"        data-key="ami"  title="Our 25-model Auto Market Index (short history)">AMI</button>
+
           </div>
         </div>
         <div class="chart-container">
@@ -569,12 +606,18 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">MostLiked Index — Buyer Attention by Segment</span>
+          <div class="range-toggles" id="mostlikedRangeToggles">
+            <button class="range-btn" data-ml-range="1Y">1Y</button>
+            <button class="range-btn" data-ml-range="3Y">3Y</button>
+            <button class="range-btn active" data-ml-range="MAX">MAX</button>
+          </div>
         </div>
         <div class="chart-container">
           <canvas id="mostlikedChart"></canvas>
         </div>
+        <div class="ml-line-toggles" id="mostlikedLineToggles"></div>
         <div style="padding: 12px 20px 16px; font-size: 12px; color: var(--text-muted, #7A7974); line-height: 1.5;">
-          Quarterly index of buyer attention derived from YouTube review video velocity, rolling by model year. 7 segments + Overall, rebased to 1000 at Q2 2020.
+          Quarterly index of buyer attention derived from YouTube review video velocity, rolling by model year. 7 segments + Overall, rebased to 1000 at Q2 2020. Van is hidden by default for readability — toggle it on to see the full scale.
         </div>
       </div>
     </section>
@@ -610,8 +653,8 @@
         <div class="how-grid">
           <div class="how-item">
             <div class="how-icon">📡</div>
-            <div class="how-title">Weekly Polls</div>
-            <div class="how-text">Every 7 days we query Marketcheck's national active-listing database for each of the 25 models.</div>
+            <div class="how-title">Monthly Polls</div>
+            <div class="how-text">Every month we pull national active-listing data for each of the 185 models.</div>
           </div>
           <div class="how-item">
             <div class="how-icon">📊</div>
@@ -621,7 +664,7 @@
           <div class="how-item">
             <div class="how-icon">🧮</div>
             <div class="how-title">Index Calculation</div>
-            <div class="how-text">The AUTO INDEX equals the simple average of all 25 model medians — a broad, equally-weighted gauge.</div>
+            <div class="how-text">The AUTO INDEX equals the simple average of all 185 model medians — a broad, equally-weighted gauge.</div>
           </div>
           <div class="how-item">
             <div class="how-icon">🔍</div>
@@ -648,7 +691,7 @@
             </button>
           </div>
           <p style="margin-top:12px; font-size:12px; color:var(--text-faint);">
-            Pro export includes AUTO INDEX history and all 25 model median prices per week. Upgrade at <a href="https://quantitativegenius.com" style="color:var(--primary);">quantitativegenius.com</a>.
+            Pro export includes AUTO INDEX history and all 185 model median prices per month. Upgrade at <a href="https://quantitativegenius.com" style="color:var(--primary);">quantitativegenius.com</a>.
           </p>
         </div>
       </div>
@@ -740,11 +783,13 @@ let currentData  = null;
 let indexChart   = null;
 let userTier     = null;
 // Dataset index for each toggleable series.
-// Auto Market Data (AMD) is the primary line. Auto Market Index (AMI) is our in-house
-// 25-model index — short history, default OFF.
-const DATASET_INDEX = { amd: 0, spx: 1, gold: 2, btc: 3, ami: 4 };
-const overlayState = { amd: true, spx: true, gold: true, btc: true, ami: false };
-const overlayData  = { amd: [], spx: [], gold: [], btc: [], ami: [] };
+// Auto Market Data (AMD) is the primary line, rendered on the left y-axis in USD.
+// SPX/GLD/BTC are overlays on the right y-axis, each rendered on its own native
+// timestamp grid (not aligned to AMD's monthly points) so 1M/1Y views look dense
+// and reflect daily macro movement. This matches the stocks/oil/bitcoin pages.
+const DATASET_INDEX = { amd: 0, spx: 1, gold: 2, btc: 3 };
+const overlayState = { amd: true, spx: true, gold: true, btc: true };
+const overlayData  = { amd: [], spx: [], gold: [], btc: [] };
 
 // ── Overlay helpers ──
 async function fetchOverlay(key, range) {
@@ -841,7 +886,7 @@ function initChart() {
           borderWidth: 1.5,
           pointRadius: 0,
           tension: 0.2,
-          yAxisID: 'y2',
+          yAxisID: 'y1',
           hidden: false,
           spanGaps: true,
         },
@@ -854,23 +899,8 @@ function initChart() {
           borderWidth: 1.5,
           pointRadius: 0,
           tension: 0.2,
-          yAxisID: 'y3',
+          yAxisID: 'y1',
           hidden: false,
-          spanGaps: true,
-        },
-        {
-          // 4 = Auto Market Index (our 25-model index, short history) — default OFF
-          label: 'Auto Market Index',
-          data: [],
-          borderColor: '#ef4444',
-          backgroundColor: 'rgba(239,68,68,0.06)',
-          borderWidth: 1.8,
-          pointRadius: 2,
-          pointHoverRadius: 4,
-          pointBackgroundColor: '#ef4444',
-          tension: 0.3,
-          yAxisID: 'y4',
-          hidden: true,
           spanGaps: true,
         },
       ]
@@ -890,8 +920,8 @@ function initChart() {
           padding: 10,
           callbacks: {
             label: ctx => {
-              if (ctx.datasetIndex === 0) return ' Auto Market Index: ' + fmt(ctx.parsed.y);
-              return ' ' + ctx.dataset.label + ': ' + (ctx.parsed.y != null ? '$' + Math.round(ctx.parsed.y).toLocaleString() : '—');
+              if (ctx.datasetIndex === 0) return ' Auto Market Data: ' + fmt(ctx.parsed.y);
+              return ' ' + ctx.dataset.label + ': ' + (ctx.parsed.y != null ? Math.round(ctx.parsed.y).toLocaleString() : '—');
             },
           }
         }
@@ -904,18 +934,27 @@ function initChart() {
           ticks: { color: '#6b4848', font: { family: "'DM Mono', monospace", size: 11 } },
         },
         y: {
-          position: 'right',
+          position: 'left',
           grid: { color: 'rgba(58,31,31,0.5)' },
           ticks: {
-            color: '#6b4848',
+            color: '#14b8a6',
             font: { family: "'DM Mono', monospace", size: 11 },
             callback: v => '$' + Math.round(v).toLocaleString(),
           },
+          title: { display: true, text: 'AMD (USD)', color: '#14b8a6', font: { family: "'DM Mono', monospace", size: 10 } },
         },
-        y1: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
+        y1: {
+          position: 'right',
+          grid: { display: false },
+          ticks: {
+            color: '#8a6060',
+            font: { family: "'DM Mono', monospace", size: 11 },
+            callback: v => Math.round(v).toLocaleString(),
+          },
+          title: { display: true, text: 'Overlays', color: '#8a6060', font: { family: "'DM Mono', monospace", size: 10 } },
+        },
         y2: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
         y3: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
-        y4: { display: false, position: 'right', grid: { display: false }, beginAtZero: false },
       }
     }
   });
@@ -945,7 +984,7 @@ async function loadCurrent() {
 
     // Models count
     const tracked = (data.models || []).filter(m => m.median_price != null).length;
-    document.getElementById('modelsCount').textContent = `${tracked} / 25 models with data`;
+    document.getElementById('modelsCount').textContent = `${tracked} / 185 models with data`;
 
     // Render model cards
     renderModelCards(data.models || []);
@@ -979,8 +1018,8 @@ function renderModelCards(models) {
 
     const hasData   = d.median_price != null;
     const changeStr = hasData && d.change_percent != null
-      ? (d.change_percent >= 0 ? '▲ ' : '▼ ') + Math.abs(d.change_percent).toFixed(1) + '% vs prior week'
-      : hasData ? 'No prior week data' : '';
+      ? (d.change_percent >= 0 ? '▲ ' : '▼ ') + Math.abs(d.change_percent).toFixed(1) + '% vs prior month'
+      : hasData ? 'No prior month data' : '';
     const changeCls = d.change_percent > 0 ? 'positive' : d.change_percent < 0 ? 'negative' : 'neutral';
 
     card.innerHTML = `
@@ -1000,43 +1039,31 @@ function renderModelCards(models) {
 }
 
 // ── Load chart history ──
-// Auto Market Data is the PRIMARY series (monthly, since 1997) and drives the x-axis.
-// All other overlays are aligned against AMD points. AMI (our 25-model index) is a
-// togglable overlay that defaults OFF.
+// AMD is the primary series (monthly, back to 1997) on the left y-axis (USD).
+// SPX/GLD/BTC are overlays on the right y-axis, each on its own native timestamp
+// grid. 1M and 1Y views get dense overlay detail even though AMD is monthly.
 async function loadChartHistory(range) {
   try {
-    const useIntraday = false; // AMD is monthly — no intraday alignment needed
-    const [amd, spx, gold, btc, ami] = await Promise.all([
+    const [amd, spx, gold, btc] = await Promise.all([
       fetchOverlay('amd',  range),
       fetchOverlay('spx',  range),
       fetchOverlay('gold', range),
       fetchOverlay('btc',  range),
-      fetchOverlay('ami',  range),
     ]);
     overlayData.amd  = amd;
     overlayData.spx  = spx;
     overlayData.gold = gold;
     overlayData.btc  = btc;
-    overlayData.ami  = ami;
 
-    // Build primary series from AMD (the monthly reference line)
-    const primaryPts = amd.map(r => ({ x: new Date(r.timestamp), y: r.value }));
-    indexChart.data.datasets[DATASET_INDEX.amd].data = primaryPts;
-
-    // Align one overlay arr to the primary AMD timestamps
-    function alignToPrimary(arr) {
-      return amd.map(r => {
-        const v = nearestValue(arr, r.timestamp, useIntraday);
-        return { x: new Date(r.timestamp), y: v };
-      });
-    }
-
-    // Populate overlays
-    indexChart.data.datasets[DATASET_INDEX.spx].data  = alignToPrimary(spx);
-    indexChart.data.datasets[DATASET_INDEX.gold].data = alignToPrimary(gold);
-    indexChart.data.datasets[DATASET_INDEX.btc].data  = alignToPrimary(btc);
-    // AMI aligned against AMD timestamps (will mostly be null for pre-AMI history)
-    indexChart.data.datasets[DATASET_INDEX.ami].data  = alignToPrimary(ami);
+    // Each series on its own native timestamp grid. Chart.js time axis handles
+    // mixed cadence so AMD (monthly) and SPX/GLD/BTC (daily) coexist cleanly.
+    // AMD uses step-style visual via Chart.js's spanGaps + tension; no forced
+    // alignment so 1M/1Y views stay dense with daily overlay data.
+    const toPts = arr => arr.map(r => ({ x: new Date(r.timestamp), y: r.value }));
+    indexChart.data.datasets[DATASET_INDEX.amd].data  = toPts(amd);
+    indexChart.data.datasets[DATASET_INDEX.spx].data  = toPts(spx);
+    indexChart.data.datasets[DATASET_INDEX.gold].data = toPts(gold);
+    indexChart.data.datasets[DATASET_INDEX.btc].data  = toPts(btc);
 
     // Apply current toggle visibility state — use Chart.js meta visibility as the
     // single source of truth so hidden survives chart.update() re-renders.
@@ -1242,13 +1269,65 @@ const MOSTLIKED_COLORS = {
 };
 const MOSTLIKED_ORDER = ['overall','luxury_car','suv','pickup','sports_car','van','midsize_car','compact_car'];
 
+let mostlikedRange = 'MAX'; // '1Y' | '3Y' | 'MAX'
+let mostlikedSlugBySetIdx = []; // dataset index -> segment slug
+
+function setMostLikedRange(range) {
+  mostlikedRange = range;
+  if (!mostlikedChart) return;
+  const xScale = mostlikedChart.options.scales.x;
+  if (range === 'MAX') {
+    delete xScale.min;
+  } else {
+    const now = Date.now();
+    const years = range === '1Y' ? 1 : 3;
+    xScale.min = now - years * 365.25 * 24 * 3600 * 1000;
+  }
+  mostlikedChart.update();
+}
+
+function setupMostLikedRangeToggles() {
+  document.querySelectorAll('#mostlikedRangeToggles .range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#mostlikedRangeToggles .range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setMostLikedRange(btn.dataset.mlRange);
+    });
+  });
+}
+
+function buildMostLikedLineToggles(datasets) {
+  const wrap = document.getElementById('mostlikedLineToggles');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  datasets.forEach((ds, idx) => {
+    const slug = mostlikedSlugBySetIdx[idx];
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ml-line-btn' + (ds.hidden ? '' : ' active');
+    btn.dataset.mlLine = slug;
+    btn.style.setProperty('--ml-color', MOSTLIKED_COLORS[slug]);
+    btn.textContent = ds.label;
+    btn.addEventListener('click', () => {
+      const meta = mostlikedChart.getDatasetMeta(idx);
+      const hidden = meta.hidden === null ? mostlikedChart.data.datasets[idx].hidden : meta.hidden;
+      meta.hidden = !hidden;
+      btn.classList.toggle('active', hidden); // hidden was true -> becoming visible
+      mostlikedChart.update();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
 async function loadMostLiked() {
   try {
     const r = await fetch('/api/mostliked', { credentials: 'include' });
     if (!r.ok) return;
     const d = await r.json();
     const lineBySlug = Object.fromEntries((d.lines || []).map(l => [l.segment, l]));
-    const datasets = MOSTLIKED_ORDER.filter(s => lineBySlug[s]).map(slug => {
+    const orderedSlugs = MOSTLIKED_ORDER.filter(s => lineBySlug[s]);
+    mostlikedSlugBySetIdx = orderedSlugs.slice();
+    const datasets = orderedSlugs.map(slug => {
       const line = lineBySlug[slug];
       return {
         label: line.label,
@@ -1259,6 +1338,7 @@ async function loadMostLiked() {
         tension: 0.25,
         pointRadius: 0,
         pointHoverRadius: 4,
+        hidden: slug === 'van', // Van hidden by default for better scale
       };
     });
     const ctx = document.getElementById('mostlikedChart').getContext('2d');
@@ -1270,7 +1350,7 @@ async function loadMostLiked() {
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 14, font: { size: 12 } } },
+          legend: { display: false },
           tooltip: {
             callbacks: {
               title: (items) => {
@@ -1290,6 +1370,8 @@ async function loadMostLiked() {
         },
       },
     });
+    buildMostLikedLineToggles(datasets);
+    setupMostLikedRangeToggles();
   } catch (e) {
     console.error('loadMostLiked error:', e);
   }
