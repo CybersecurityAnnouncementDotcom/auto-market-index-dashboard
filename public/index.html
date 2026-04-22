@@ -564,6 +564,21 @@
       </div>
     </section>
 
+    <!-- MostLiked chart -->
+    <section class="chart-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">MostLiked Index — Buyer Attention by Segment</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="mostlikedChart"></canvas>
+        </div>
+        <div style="padding: 12px 20px 16px; font-size: 12px; color: var(--text-muted, #7A7974); line-height: 1.5;">
+          Quarterly index of buyer attention derived from YouTube review video velocity, rolling by model year. 7 segments + Overall, rebased to 1000 at Q2 2020.
+        </div>
+      </div>
+    </section>
+
     <!-- Model grid -->
     <section class="grid-section">
       <div class="section-header">
@@ -1213,6 +1228,73 @@ function setupApiKeyModal() {
   });
 }
 
+// ── MostLiked chart ──
+let mostlikedChart = null;
+const MOSTLIKED_COLORS = {
+  overall:     '#1B474D',  // dark teal — anchor
+  luxury_car:  '#20808D',  // teal
+  suv:         '#A84B2F',  // terra/rust
+  pickup:      '#FFC553',  // gold
+  sports_car:  '#944454',  // mauve
+  van:         '#6E522B',  // brown
+  midsize_car: '#848456',  // olive
+  compact_car: '#BCE2E7',  // light cyan
+};
+const MOSTLIKED_ORDER = ['overall','luxury_car','suv','pickup','sports_car','van','midsize_car','compact_car'];
+
+async function loadMostLiked() {
+  try {
+    const r = await fetch('/api/mostliked', { credentials: 'include' });
+    if (!r.ok) return;
+    const d = await r.json();
+    const lineBySlug = Object.fromEntries((d.lines || []).map(l => [l.segment, l]));
+    const datasets = MOSTLIKED_ORDER.filter(s => lineBySlug[s]).map(slug => {
+      const line = lineBySlug[slug];
+      return {
+        label: line.label,
+        data: line.readings.map(p => ({ x: p.timestamp, y: p.value })),
+        borderColor: MOSTLIKED_COLORS[slug],
+        backgroundColor: MOSTLIKED_COLORS[slug],
+        borderWidth: slug === 'overall' ? 3 : 1.75,
+        tension: 0.25,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+      };
+    });
+    const ctx = document.getElementById('mostlikedChart').getContext('2d');
+    mostlikedChart = new Chart(ctx, {
+      type: 'line',
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 14, font: { size: 12 } } },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const ts = items[0]?.parsed?.x;
+                if (!ts) return '';
+                const d = new Date(ts);
+                const q = Math.floor(d.getUTCMonth() / 3) + 1;
+                return `Q${q} ${d.getUTCFullYear()}`;
+              },
+              label: (ctx) => `${ctx.dataset.label}: ${Math.round(ctx.parsed.y).toLocaleString()}`,
+            },
+          },
+        },
+        scales: {
+          x: { type: 'time', time: { unit: 'quarter', displayFormats: { quarter: 'QQQ yyyy' } }, grid: { display: false } },
+          y: { beginAtZero: false, title: { display: true, text: 'Index (Q2 2020 = 1000)', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.06)' } },
+        },
+      },
+    });
+  } catch (e) {
+    console.error('loadMostLiked error:', e);
+  }
+}
+
 // ── Boot ──
 (async () => {
   initChart();
@@ -1225,6 +1307,7 @@ function setupApiKeyModal() {
     loadCurrent(),
     loadChartHistory(currentRange),
     loadUserTier(),
+    loadMostLiked(),
   ]);
 })();
 </script>
