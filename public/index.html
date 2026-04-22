@@ -591,7 +591,7 @@
             <button class="overlay-btn active" data-key="amd"  title="Auto Market Data (primary, monthly)">AMD</button>
             <button class="overlay-btn active" data-key="spx"  title="S&amp;P 500 overlay">SPX</button>
             <button class="overlay-btn active" data-key="gold" title="Gold overlay">GLD</button>
-            <button class="overlay-btn active" data-key="btc"  title="Bitcoin overlay">BTC</button>
+            <button class="overlay-btn" data-key="btc"  title="Bitcoin overlay">BTC</button>
 
           </div>
         </div>
@@ -938,7 +938,7 @@ let userTier     = null;
 // timestamp grid (not aligned to AMD's monthly points) so 1M/1Y views look dense
 // and reflect daily macro movement. This matches the stocks/oil/bitcoin pages.
 const DATASET_INDEX = { amd: 0, spx: 1, gold: 2, btc: 3 };
-const overlayState = { amd: true, spx: true, gold: true, btc: true };
+const overlayState = { amd: true, spx: true, gold: true, btc: false };
 const overlayData  = { amd: [], spx: [], gold: [], btc: [] };
 
 // ── Overlay helpers ──
@@ -1041,7 +1041,7 @@ function initChart() {
           spanGaps: true,
         },
         {
-          // 3 = Bitcoin overlay
+          // 3 = Bitcoin overlay (off by default; toggle via BTC pill)
           label: 'Bitcoin',
           data: [],
           borderColor: '#f7931a',
@@ -1050,7 +1050,7 @@ function initChart() {
           pointRadius: 0,
           tension: 0.2,
           yAxisID: 'y1',
-          hidden: false,
+          hidden: true,
           spanGaps: true,
         },
       ]
@@ -1133,8 +1133,7 @@ async function loadCurrent() {
     document.getElementById('heroTimestamp').textContent = 'Updated ' + formatTimestamp(data.index_timestamp);
 
     // Models count
-    const tracked = (data.models || []).filter(m => m.median_price != null).length;
-    document.getElementById('modelsCount').textContent = `${tracked} / 185 models with data`;
+    document.getElementById('modelsCount').textContent = '185 models';
 
     // Render model cards
     renderModelCards(data.models || []);
