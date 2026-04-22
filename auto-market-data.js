@@ -46,7 +46,7 @@ function ensureSchema(db) {
 
   // Migration: if an older schema exists without the new columns, the CREATE
   // TABLE IF NOT EXISTS above is a no-op. Add any missing columns defensively.
-  const cols = new Set(db.prepare("PRAGMA table_info(auto_market_data_monthly)").all().map(r => r.name));
+  const cols = new Map(db.prepare("PRAGMA table_info(auto_market_data_monthly)").all().map(r => [r.name, r]));
   const needed = [
     ['index_overall_1000',  'REAL'],
     ['index_ev_1000',       'REAL'],
@@ -66,6 +66,12 @@ function ensureSchema(db) {
       try { db.exec(`ALTER TABLE auto_market_data_monthly ADD COLUMN ${name} ${type}`); } catch (e) {}
     }
   }
+
+  // Track whether a legacy v1 NOT NULL `index_value` column exists; if so,
+  // the seeder must populate it (with the same value as src_overall) to
+  // satisfy the constraint.
+  const legacy = cols.get('index_value');
+  db._amdLegacyIndexValue = !!(legacy && legacy.notnull === 1);
 }
 
 // ---------- Seed from shipped JSON on first run ----------
@@ -90,35 +96,70 @@ function seedIfEmpty(db) {
 
   const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8'));
   const now = new Date().toISOString();
-  const ins = db.prepare(`
-    INSERT OR REPLACE INTO auto_market_data_monthly
-      (date, index_overall_1000, index_ev_1000, index_nonev_1000,
-       src_overall, src_ev, src_nonev,
-       mom_pct_overall, yoy_pct_overall,
-       mom_pct_ev, yoy_pct_ev,
-       mom_pct_nonev, yoy_pct_nonev,
-       updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
+
+  // If a legacy v1 `index_value` NOT NULL column still exists on this DB,
+  // include it in the INSERT and populate from src_overall.
+  const hasLegacyIndexValue = db._amdLegacyIndexValue === true;
+  const ins = hasLegacyIndexValue
+    ? db.prepare(`
+        INSERT OR REPLACE INTO auto_market_data_monthly
+          (date, index_value,
+           index_overall_1000, index_ev_1000, index_nonev_1000,
+           src_overall, src_ev, src_nonev,
+           mom_pct_overall, yoy_pct_overall,
+           mom_pct_ev, yoy_pct_ev,
+           mom_pct_nonev, yoy_pct_nonev,
+           updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `)
+    : db.prepare(`
+        INSERT OR REPLACE INTO auto_market_data_monthly
+          (date, index_overall_1000, index_ev_1000, index_nonev_1000,
+           src_overall, src_ev, src_nonev,
+           mom_pct_overall, yoy_pct_overall,
+           mom_pct_ev, yoy_pct_ev,
+           mom_pct_nonev, yoy_pct_nonev,
+           updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
   const tx = db.transaction(rows => {
     for (const r of rows) {
       const date = String(r.date).slice(0, 10); // YYYY-MM-DD
-      ins.run(
-        date,
-        numOrNull(r.index_overall_1000),
-        numOrNull(r.index_ev_1000),
-        numOrNull(r.index_nonev_1000),
-        numOrNull(r.src_overall),
-        numOrNull(r.src_ev),
-        numOrNull(r.src_nonev),
-        numOrNull(r.mom_pct_overall),
-        numOrNull(r.yoy_pct_overall),
-        numOrNull(r.mom_pct_ev),
-        numOrNull(r.yoy_pct_ev),
-        numOrNull(r.mom_pct_nonev),
-        numOrNull(r.yoy_pct_nonev),
-        now,
-      );
+      const overall1000 = numOrNull(r.index_overall_1000);
+      const ev1000      = numOrNull(r.index_ev_1000);
+      const nonev1000   = numOrNull(r.index_nonev_1000);
+      const srcOverall  = numOrNull(r.src_overall);
+      const srcEv       = numOrNull(r.src_ev);
+      const srcNonev    = numOrNull(r.src_nonev);
+      const momO        = numOrNull(r.mom_pct_overall);
+      const yoyO        = numOrNull(r.yoy_pct_overall);
+      const momE        = numOrNull(r.mom_pct_ev);
+      const yoyE        = numOrNull(r.yoy_pct_ev);
+      const momN        = numOrNull(r.mom_pct_nonev);
+      const yoyN        = numOrNull(r.yoy_pct_nonev);
+
+      if (hasLegacyIndexValue) {
+        // Legacy index_value comes from src_overall. Fall back to overall1000
+        // as a last resort — but both should always be present in our seed.
+        const legacyVal = srcOverall != null ? srcOverall : overall1000;
+        if (legacyVal == null) continue;
+        ins.run(
+          date, legacyVal,
+          overall1000, ev1000, nonev1000,
+          srcOverall, srcEv, srcNonev,
+          momO, yoyO, momE, yoyE, momN, yoyN,
+          now,
+        );
+      } else {
+        ins.run(
+          date,
+          overall1000, ev1000, nonev1000,
+          srcOverall, srcEv, srcNonev,
+          momO, yoyO, momE, yoyE, momN, yoyN,
+          now,
+        );
+      }
     }
   });
   tx(seed);
