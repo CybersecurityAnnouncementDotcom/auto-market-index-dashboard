@@ -1,0 +1,1017 @@
+{
+  "rows": [
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "van",
+      "label": "Van",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-04-01",
+      "quarter": "Q2 2020",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 1000.0
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 1029.24
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1172.96
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 1030.03
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 793.81
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 932.93
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "van",
+      "label": "Van",
+      "value": 1100.23
+    },
+    {
+      "timestamp": "2020-07-01",
+      "quarter": "Q3 2020",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 1025.43
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 795.52
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 1323.85
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 846.43
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 1766.16
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 842.57
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 989.4
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "van",
+      "label": "Van",
+      "value": 10211.87
+    },
+    {
+      "timestamp": "2021-07-01",
+      "quarter": "Q3 2021",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 2396.54
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 893.69
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 3721.54
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 846.43
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 3702.23
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1270.61
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 989.4
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "van",
+      "label": "Van",
+      "value": 10211.87
+    },
+    {
+      "timestamp": "2022-01-01",
+      "quarter": "Q1 2022",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 3090.82
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 893.69
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 3643.54
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 846.43
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 3354.24
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1270.61
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 989.4
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "van",
+      "label": "Van",
+      "value": 10211.87
+    },
+    {
+      "timestamp": "2022-04-01",
+      "quarter": "Q2 2022",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 3029.97
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 651.62
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 3721.54
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 846.43
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 3702.23
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1650.04
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1155.1
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "van",
+      "label": "Van",
+      "value": 2484.19
+    },
+    {
+      "timestamp": "2022-07-01",
+      "quarter": "Q3 2022",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 2030.16
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 732.09
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 3529.68
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 455.61
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 3904.01
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 3103.33
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1155.1
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "van",
+      "label": "Van",
+      "value": 2484.19
+    },
+    {
+      "timestamp": "2022-10-01",
+      "quarter": "Q4 2022",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 2194.86
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 893.69
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 2106.91
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 993.1
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2800.12
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1267.37
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1155.1
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "van",
+      "label": "Van",
+      "value": 2484.19
+    },
+    {
+      "timestamp": "2023-01-01",
+      "quarter": "Q1 2023",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 1671.5
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 2097.75
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1288.6
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2246.4
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1267.37
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1155.1
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "van",
+      "label": "Van",
+      "value": 2484.19
+    },
+    {
+      "timestamp": "2023-04-01",
+      "quarter": "Q2 2023",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 1665.46
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 1790.84
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1303.9
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2207.7
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 2310.89
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1298.19
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "van",
+      "label": "Van",
+      "value": 3294.95
+    },
+    {
+      "timestamp": "2023-10-01",
+      "quarter": "Q4 2023",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 1903.61
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 4081.58
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 993.1
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2708.21
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1524.63
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1298.19
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "van",
+      "label": "Van",
+      "value": 3294.95
+    },
+    {
+      "timestamp": "2024-01-01",
+      "quarter": "Q1 2024",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 2145.64
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1106.79
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 2484.97
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1288.6
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2187.38
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1801.62
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 1298.19
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "van",
+      "label": "Van",
+      "value": 3294.95
+    },
+    {
+      "timestamp": "2024-04-01",
+      "quarter": "Q2 2024",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 1923.21
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 4081.58
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1023.92
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2708.21
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 1401.69
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 2445.14
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "van",
+      "label": "Van",
+      "value": 5244.3
+    },
+    {
+      "timestamp": "2024-07-01",
+      "quarter": "Q3 2024",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 2574.8
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 5001.6
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 993.1
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2138.97
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 2160.9
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 2445.14
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "van",
+      "label": "Van",
+      "value": 5244.3
+    },
+    {
+      "timestamp": "2024-10-01",
+      "quarter": "Q4 2024",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 2728.97
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 4379.28
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1023.92
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 3912.69
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 2227.86
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 2445.14
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "van",
+      "label": "Van",
+      "value": 5244.3
+    },
+    {
+      "timestamp": "2025-04-01",
+      "quarter": "Q2 2025",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 2907.43
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1232.32
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 4865.35
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 883.35
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2742.35
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 4478.76
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 2937.23
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "van",
+      "label": "Van",
+      "value": 6507.09
+    },
+    {
+      "timestamp": "2025-07-01",
+      "quarter": "Q3 2025",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 3378.06
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 4865.35
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 1023.92
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2742.35
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 2584.93
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 2937.23
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "van",
+      "label": "Van",
+      "value": 6507.09
+    },
+    {
+      "timestamp": "2025-10-01",
+      "quarter": "Q4 2025",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 3111.38
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "compact_car",
+      "label": "Compact Car",
+      "value": 1118.79
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "luxury_car",
+      "label": "Luxury Car",
+      "value": 4865.35
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "midsize_car",
+      "label": "Midsize Car",
+      "value": 2967.01
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "pickup",
+      "label": "Pickup",
+      "value": 2742.35
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "suv",
+      "label": "SUV",
+      "value": 4287.83
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "sports_car",
+      "label": "Sports Car",
+      "value": 2937.23
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "van",
+      "label": "Van",
+      "value": 6507.09
+    },
+    {
+      "timestamp": "2026-01-01",
+      "quarter": "Q1 2026",
+      "segment": "overall",
+      "label": "Overall",
+      "value": 3632.24
+    }
+  ],
+  "meta": {
+    "methodology_version": "v2",
+    "base_quarter": "Q2 2020",
+    "snapshot_date": "2026-04-22"
+  }
+}

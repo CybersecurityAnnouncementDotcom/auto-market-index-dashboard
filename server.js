@@ -48,6 +48,28 @@ db.exec('CREATE INDEX IF NOT EXISTS idx_auto_index_timestamp ON auto_index(times
 amd.ensureSchema(db);
 amd.seedIfEmpty(db);
 
+// MostLiked index — quarterly 7-segment + Overall (v2 methodology)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS mostliked_index (
+    timestamp TEXT NOT NULL,
+    quarter TEXT NOT NULL,
+    segment TEXT NOT NULL,
+    label TEXT NOT NULL,
+    value REAL NOT NULL,
+    PRIMARY KEY (quarter, segment)
+  )
+`);
+db.exec('CREATE INDEX IF NOT EXISTS idx_mostliked_timestamp ON mostliked_index(timestamp)');
+const mostlikedSeedPath = path.join(__dirname, 'data', 'seed', 'mostliked_v2_seed.json');
+const mostlikedCount = db.prepare('SELECT COUNT(*) AS n FROM mostliked_index').get().n;
+if (mostlikedCount === 0 && fs.existsSync(mostlikedSeedPath)) {
+  const seed = JSON.parse(fs.readFileSync(mostlikedSeedPath, 'utf8'));
+  const ins = db.prepare('INSERT OR REPLACE INTO mostliked_index (timestamp, quarter, segment, label, value) VALUES (?, ?, ?, ?, ?)');
+  const tx = db.transaction((rows) => { for (const r of rows) ins.run(r.timestamp, r.quarter, r.segment, r.label, r.value); });
+  tx(seed.rows);
+  console.log(`Seeded mostliked_index with ${seed.rows.length} rows`);
+}
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -611,6 +633,21 @@ app.get('/api/index-history', apiLimiter, requireAuth, (req, res) => {
 // splice_factor to backfill rows so the two series are continuous at the
 // AMD→AMI cutover (methodology v2.1 §9.2).
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// GET /api/mostliked — quarterly MostLiked index, 7 segments + Overall (8 lines)
+// ---------------------------------------------------------------------------
+app.get('/api/mostliked', apiLimiter, requireAuth, (req, res) => {
+  try {
+    const rows = db.prepare('SELECT timestamp, quarter, segment, label, value FROM mostliked_index ORDER BY segment, timestamp').all();
+    const lines = {};
+    for (const r of rows) {
+      if (!lines[r.segment]) lines[r.segment] = { segment: r.segment, label: r.label, readings: [] };
+      lines[r.segment].readings.push({ timestamp: r.timestamp, quarter: r.quarter, value: r.value });
+    }
+    res.json({ lines: Object.values(lines) });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.get('/api/segment-history', apiLimiter, requireAuth, (req, res) => {
   try {
     const range = req.query.range || 'MAX';
