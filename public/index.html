@@ -1208,7 +1208,15 @@ async function loadChartHistory(range) {
     // mixed cadence so AMD (monthly) and SPX/GLD/BTC (daily) coexist cleanly.
     // AMD uses step-style visual via Chart.js's spanGaps + tension; no forced
     // alignment so 1M/1Y views stay dense with daily overlay data.
-    const toPts = arr => arr.map(r => ({ x: new Date(r.timestamp), y: r.value }));
+    //
+    // MAX view: AMD series starts at 2020-01-01, so clip SPX/GLD/BTC to the
+    // same floor for visual alignment. Shorter ranges (1M, 1Y) are unaffected.
+    const MAX_FLOOR = new Date('2020-01-01T00:00:00Z');
+    const toPts = arr => {
+      const pts = arr.map(r => ({ x: new Date(r.timestamp), y: r.value }));
+      if (range === 'MAX') return pts.filter(p => p.x >= MAX_FLOOR);
+      return pts;
+    };
     indexChart.data.datasets[DATASET_INDEX.amd].data  = toPts(amd);
     indexChart.data.datasets[DATASET_INDEX.spx].data  = toPts(spx);
     indexChart.data.datasets[DATASET_INDEX.gold].data = toPts(gold);
