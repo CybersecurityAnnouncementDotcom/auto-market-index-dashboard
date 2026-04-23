@@ -234,22 +234,26 @@
       display: flex;
       gap: 4px;
     }
-    .range-delta {
+    /* % toggle — matches pattern from other QG dashboards (gold, bitcoin, stocks) */
+    .pct-toggle {
+      background: transparent;
+      border: 1px solid rgba(100, 100, 140, 0.3);
+      color: #7a7974;
+      font-family: var(--font-mono, 'DM Mono', monospace);
       font-size: 12px;
       font-weight: 600;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
-      margin-left: 10px;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: 6px;
     }
-    .range-delta.pos { color: #5fb66f; background: rgba(95,182,111,0.10); }
-    .range-delta.neg { color: #e06a6a; background: rgba(224,106,106,0.10); }
-    .range-delta.flat { color: var(--text-muted, #7A7974); background: rgba(255,255,255,0.04); }
-    .range-delta:empty { display: none; }
+    .pct-toggle:hover { color: #bab9b4; border-color: rgba(100,100,140,0.5); }
+    .pct-toggle.active {
+      background: rgba(20,184,166,0.18);
+      color: #14b8a6;
+      border-color: rgba(20,184,166,0.5);
+    }
     .range-btn {
       background: none; border: none; cursor: pointer;
       padding: 5px 10px;
@@ -600,11 +604,11 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Auto Market Data</span>
-          <span class="range-delta" id="amdRangeDelta" aria-live="polite"></span>
           <div class="range-toggles" id="rangeToggles">
             <button class="range-btn" data-range="1M">1M</button>
             <button class="range-btn" data-range="1Y">1Y</button>
             <button class="range-btn active" data-range="MAX">MAX</button>
+            <button id="amdPctToggle" class="pct-toggle" title="Toggle % change view">%</button>
             <button class="overlay-btn active" data-key="amd"  title="Auto Market Data (primary, monthly)">AMD</button>
             <button class="overlay-btn active" data-key="spx"  title="S&amp;P 500 overlay">SPX</button>
             <button class="overlay-btn active" data-key="gold" title="Gold overlay">GLD</button>
@@ -623,11 +627,11 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">MostLiked Index — Buyer Attention by Segment</span>
-          <span class="range-delta" id="mlRangeDelta" aria-live="polite"></span>
           <div class="range-toggles" id="mostlikedRangeToggles">
             <button class="range-btn" data-ml-range="1Y">1Y</button>
             <button class="range-btn" data-ml-range="3Y">3Y</button>
             <button class="range-btn active" data-ml-range="MAX">MAX</button>
+            <button id="mlPctToggle" class="pct-toggle" title="Toggle % change view">%</button>
           </div>
         </div>
         <div class="chart-container">
@@ -1238,10 +1242,15 @@ async function loadChartHistory(range) {
       if (range === 'MAX') return pts.filter(p => p.x >= MAX_FLOOR);
       return pts;
     };
-    indexChart.data.datasets[DATASET_INDEX.amd].data  = toPts(amd);
-    indexChart.data.datasets[DATASET_INDEX.spx].data  = toPts(spx);
-    indexChart.data.datasets[DATASET_INDEX.gold].data = toPts(gold);
-    indexChart.data.datasets[DATASET_INDEX.btc].data  = toPts(btc);
+    // Cache raw (value-mode) points for the % toggle to flip without refetching.
+    amdRawData.amd  = toPts(amd);
+    amdRawData.spx  = toPts(spx);
+    amdRawData.gold = toPts(gold);
+    amdRawData.btc  = toPts(btc);
+    indexChart.data.datasets[DATASET_INDEX.amd].data  = amdRawData.amd;
+    indexChart.data.datasets[DATASET_INDEX.spx].data  = amdRawData.spx;
+    indexChart.data.datasets[DATASET_INDEX.gold].data = amdRawData.gold;
+    indexChart.data.datasets[DATASET_INDEX.btc].data  = amdRawData.btc;
 
     // Apply current toggle visibility state — use Chart.js meta visibility as the
     // single source of truth so hidden survives chart.update() re-renders.
@@ -1249,26 +1258,75 @@ async function loadChartHistory(range) {
       applyDatasetVisibility(key, overlayState[key]);
     }
 
+    applyAmdPctMode();
     indexChart.update('none');
-    updateAmdRangeDelta();
   } catch(e) {
     console.error('loadChartHistory error:', e);
   }
 }
 
-// Compute % change of AMD series over the currently-displayed range.
-function updateAmdRangeDelta() {
-  const el = document.getElementById('amdRangeDelta');
-  if (!el || !indexChart) return;
-  const pts = (indexChart.data.datasets[DATASET_INDEX.amd] || {}).data || [];
-  if (pts.length < 2) { el.textContent = ''; el.className = 'range-delta'; return; }
-  const first = pts[0].y, last = pts[pts.length - 1].y;
-  if (!isFinite(first) || !isFinite(last) || first === 0) { el.textContent = ''; el.className = 'range-delta'; return; }
-  const pct = (last / first - 1) * 100;
-  const cls = pct > 0.05 ? 'pos' : pct < -0.05 ? 'neg' : 'flat';
-  const sign = pct > 0 ? '+' : '';
-  el.textContent = `${sign}${pct.toFixed(1)}% over range`;
-  el.className = `range-delta ${cls}`;
+// Store raw-value points so we can flip between value and % without refetching.
+let amdRawData = { amd: [], spx: [], gold: [], btc: [] };
+let amdPctMode = false;
+
+// Convert array of {x,y} to %-change-from-first-point.
+function toPctPts(pts) {
+  if (!pts || pts.length === 0) return [];
+  const firstY = pts[0].y;
+  if (!isFinite(firstY) || firstY === 0) return pts.map(p => ({ x: p.x, y: null }));
+  return pts.map(p => ({ x: p.x, y: isFinite(p.y) ? ((p.y - firstY) / firstY) * 100 : null }));
+}
+
+// Apply current amdPctMode to the chart: rebase or restore datasets,
+// swap axes (single % axis vs dual value axis), update tooltip/axis labels.
+function applyAmdPctMode() {
+  if (!indexChart) return;
+  const ds = indexChart.data.datasets;
+  if (amdPctMode) {
+    ds[DATASET_INDEX.amd].data  = toPctPts(amdRawData.amd);
+    ds[DATASET_INDEX.spx].data  = toPctPts(amdRawData.spx);
+    ds[DATASET_INDEX.gold].data = toPctPts(amdRawData.gold);
+    ds[DATASET_INDEX.btc].data  = toPctPts(amdRawData.btc);
+    // All datasets collapse onto the left axis in % mode
+    ds[DATASET_INDEX.amd].yAxisID  = 'y';
+    ds[DATASET_INDEX.spx].yAxisID  = 'y';
+    ds[DATASET_INDEX.gold].yAxisID = 'y';
+    ds[DATASET_INDEX.btc].yAxisID  = 'y';
+    indexChart.options.scales.y.ticks.callback  = v => (v >= 0 ? '+' : '') + v.toFixed(0) + '%';
+    indexChart.options.scales.y.title.text      = '% change';
+    indexChart.options.scales.y1.display        = false;
+  } else {
+    ds[DATASET_INDEX.amd].data  = amdRawData.amd;
+    ds[DATASET_INDEX.spx].data  = amdRawData.spx;
+    ds[DATASET_INDEX.gold].data = amdRawData.gold;
+    ds[DATASET_INDEX.btc].data  = amdRawData.btc;
+    ds[DATASET_INDEX.amd].yAxisID  = 'y';
+    ds[DATASET_INDEX.spx].yAxisID  = 'y1';
+    ds[DATASET_INDEX.gold].yAxisID = 'y1';
+    ds[DATASET_INDEX.btc].yAxisID  = 'y1';
+    indexChart.options.scales.y.ticks.callback  = v => Math.round(v).toLocaleString();
+    indexChart.options.scales.y.title.text      = 'AMD (index)';
+    indexChart.options.scales.y1.display        = true;
+  }
+  // Tooltip formatter adapts automatically based on current mode
+  indexChart.options.plugins.tooltip.callbacks.label = ctx => {
+    const y = ctx.parsed.y;
+    const lbl = ctx.datasetIndex === 0 ? 'Auto Market Data' : ctx.dataset.label;
+    if (y == null) return ' ' + lbl + ': —';
+    if (amdPctMode) return ' ' + lbl + ': ' + (y >= 0 ? '+' : '') + y.toFixed(2) + '%';
+    return ' ' + lbl + ': ' + (ctx.datasetIndex === 0 ? fmt(y) : Math.round(y).toLocaleString());
+  };
+}
+
+function setupAmdPctToggle() {
+  const btn = document.getElementById('amdPctToggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    amdPctMode = !amdPctMode;
+    btn.classList.toggle('active', amdPctMode);
+    applyAmdPctMode();
+    indexChart.update();
+  });
 }
 
 // ── Category filter ──
@@ -1470,6 +1528,10 @@ const MOSTLIKED_ORDER = ['overall','luxury_car','suv','pickup','sports_car','van
 let mostlikedRange = 'MAX'; // '1Y' | '3Y' | 'MAX'
 let mostlikedSlugBySetIdx = []; // dataset index -> segment slug
 
+// Cache raw MostLiked points so the % toggle can flip without refetching.
+let mlRawData = []; // array aligned with dataset order (mostlikedSlugBySetIdx)
+let mlPctMode = false;
+
 function setMostLikedRange(range) {
   mostlikedRange = range;
   if (!mostlikedChart) return;
@@ -1481,28 +1543,64 @@ function setMostLikedRange(range) {
     const years = range === '1Y' ? 1 : 3;
     xScale.min = now - years * 365.25 * 24 * 3600 * 1000;
   }
+  // Range change can move the first visible point, so recompute pct rebase.
+  if (mlPctMode) applyMlPctMode();
   mostlikedChart.update();
-  updateMostLikedRangeDelta();
 }
 
-// Compute % change of the Overall MostLiked series over the visible range.
-function updateMostLikedRangeDelta() {
-  const el = document.getElementById('mlRangeDelta');
-  if (!el || !mostlikedChart) return;
-  const overallIdx = mostlikedSlugBySetIdx.indexOf('overall');
-  if (overallIdx < 0) { el.textContent = ''; el.className = 'range-delta'; return; }
-  const pts = (mostlikedChart.data.datasets[overallIdx] || {}).data || [];
+// Rebase each MostLiked series to %-change from its first VISIBLE point so
+// range changes (1Y / 3Y / MAX) each start at 0%.
+function applyMlPctMode() {
+  if (!mostlikedChart) return;
   const xScale = mostlikedChart.options.scales.x;
   const minX = xScale && xScale.min != null ? xScale.min : -Infinity;
-  const visible = pts.filter(p => (p.x instanceof Date ? p.x.getTime() : p.x) >= minX);
-  if (visible.length < 2) { el.textContent = ''; el.className = 'range-delta'; return; }
-  const first = visible[0].y, last = visible[visible.length - 1].y;
-  if (!isFinite(first) || !isFinite(last) || first === 0) { el.textContent = ''; el.className = 'range-delta'; return; }
-  const pct = (last / first - 1) * 100;
-  const cls = pct > 0.05 ? 'pos' : pct < -0.05 ? 'neg' : 'flat';
-  const sign = pct > 0 ? '+' : '';
-  el.textContent = `Overall ${sign}${pct.toFixed(1)}% over range`;
-  el.className = `range-delta ${cls}`;
+  const ds = mostlikedChart.data.datasets;
+  if (mlPctMode) {
+    ds.forEach((d, i) => {
+      const raw = mlRawData[i] || [];
+      const visible = raw.filter(p => {
+        const x = p.x instanceof Date ? p.x.getTime() : new Date(p.x).getTime();
+        return x >= minX;
+      });
+      if (visible.length === 0) { d.data = []; return; }
+      const firstY = visible[0].y;
+      if (!isFinite(firstY) || firstY === 0) {
+        d.data = raw.map(p => ({ x: p.x, y: null }));
+        return;
+      }
+      d.data = raw.map(p => ({
+        x: p.x,
+        y: isFinite(p.y) ? ((p.y - firstY) / firstY) * 100 : null,
+      }));
+    });
+    mostlikedChart.options.scales.y.ticks = mostlikedChart.options.scales.y.ticks || {};
+    mostlikedChart.options.scales.y.ticks.callback = v => (v >= 0 ? '+' : '') + v.toFixed(0) + '%';
+    mostlikedChart.options.scales.y.title.text = '% change from start of range';
+  } else {
+    ds.forEach((d, i) => { d.data = mlRawData[i] || []; });
+    if (mostlikedChart.options.scales.y.ticks) {
+      delete mostlikedChart.options.scales.y.ticks.callback;
+    }
+    mostlikedChart.options.scales.y.title.text = 'Index (Q2 2020 = 1000)';
+  }
+  // Tooltip formatter adapts based on current mode.
+  mostlikedChart.options.plugins.tooltip.callbacks.label = ctx => {
+    const y = ctx.parsed.y;
+    if (y == null) return ctx.dataset.label + ': —';
+    if (mlPctMode) return ctx.dataset.label + ': ' + (y >= 0 ? '+' : '') + y.toFixed(1) + '%';
+    return ctx.dataset.label + ': ' + Math.round(y).toLocaleString();
+  };
+}
+
+function setupMlPctToggle() {
+  const btn = document.getElementById('mlPctToggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    mlPctMode = !mlPctMode;
+    btn.classList.toggle('active', mlPctMode);
+    applyMlPctMode();
+    mostlikedChart.update();
+  });
 }
 
 function setupMostLikedRangeToggles() {
@@ -1532,8 +1630,9 @@ function buildMostLikedLineToggles(datasets) {
       const hidden = meta.hidden === null ? mostlikedChart.data.datasets[idx].hidden : meta.hidden;
       meta.hidden = !hidden;
       btn.classList.toggle('active', hidden); // hidden was true -> becoming visible
+      // Re-apply pct mode since visible-series set may have changed first point.
+      if (mlPctMode) applyMlPctMode();
       mostlikedChart.update();
-      updateMostLikedRangeDelta();
     });
     wrap.appendChild(btn);
   });
@@ -1590,9 +1689,11 @@ async function loadMostLiked() {
         },
       },
     });
+    // Cache raw points in dataset order so the % toggle can restore/rebase.
+    mlRawData = datasets.map(d => d.data.map(p => ({ x: p.x, y: p.y })));
     buildMostLikedLineToggles(datasets);
     setupMostLikedRangeToggles();
-    updateMostLikedRangeDelta();
+    setupMlPctToggle();
   } catch (e) {
     console.error('loadMostLiked error:', e);
   }
@@ -1602,6 +1703,7 @@ async function loadMostLiked() {
 (async () => {
   initChart();
   setupRangeToggles();
+  setupAmdPctToggle();
   setupCategoryTabs();
   setupExports();
   setupApiKeyModal();
