@@ -234,6 +234,22 @@
       display: flex;
       gap: 4px;
     }
+    .range-delta {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-left: 10px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+    }
+    .range-delta.pos { color: #5fb66f; background: rgba(95,182,111,0.10); }
+    .range-delta.neg { color: #e06a6a; background: rgba(224,106,106,0.10); }
+    .range-delta.flat { color: var(--text-muted, #7A7974); background: rgba(255,255,255,0.04); }
+    .range-delta:empty { display: none; }
     .range-btn {
       background: none; border: none; cursor: pointer;
       padding: 5px 10px;
@@ -584,6 +600,7 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Auto Market Data</span>
+          <span class="range-delta" id="amdRangeDelta" aria-live="polite"></span>
           <div class="range-toggles" id="rangeToggles">
             <button class="range-btn" data-range="1M">1M</button>
             <button class="range-btn" data-range="1Y">1Y</button>
@@ -606,6 +623,7 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">MostLiked Index — Buyer Attention by Segment</span>
+          <span class="range-delta" id="mlRangeDelta" aria-live="polite"></span>
           <div class="range-toggles" id="mostlikedRangeToggles">
             <button class="range-btn" data-ml-range="1Y">1Y</button>
             <button class="range-btn" data-ml-range="3Y">3Y</button>
@@ -663,7 +681,10 @@
               📥 Download JSON <span class="pro-badge">PRO</span>
             </button>
           </div>
-          <p style="margin-top:12px; font-size:12px; color:var(--text-faint);">
+          <p class="export-note export-note-pro" style="margin-top:12px; font-size:12px; color:var(--text-faint); display:none;">
+            Pro export includes AUTO INDEX history and all 185 model median prices per month.
+          </p>
+          <p class="export-note export-note-free" style="margin-top:12px; font-size:12px; color:var(--text-faint); display:none;">
             Pro export includes AUTO INDEX history and all 185 model median prices per month. Upgrade at <a href="https://quantitativegenius.com" style="color:var(--primary);">quantitativegenius.com</a>.
           </p>
         </div>
@@ -1229,9 +1250,25 @@ async function loadChartHistory(range) {
     }
 
     indexChart.update('none');
+    updateAmdRangeDelta();
   } catch(e) {
     console.error('loadChartHistory error:', e);
   }
+}
+
+// Compute % change of AMD series over the currently-displayed range.
+function updateAmdRangeDelta() {
+  const el = document.getElementById('amdRangeDelta');
+  if (!el || !indexChart) return;
+  const pts = (indexChart.data.datasets[DATASET_INDEX.amd] || {}).data || [];
+  if (pts.length < 2) { el.textContent = ''; el.className = 'range-delta'; return; }
+  const first = pts[0].y, last = pts[pts.length - 1].y;
+  if (!isFinite(first) || !isFinite(last) || first === 0) { el.textContent = ''; el.className = 'range-delta'; return; }
+  const pct = (last / first - 1) * 100;
+  const cls = pct > 0.05 ? 'pos' : pct < -0.05 ? 'neg' : 'flat';
+  const sign = pct > 0 ? '+' : '';
+  el.textContent = `${sign}${pct.toFixed(1)}% over range`;
+  el.className = `range-delta ${cls}`;
 }
 
 // ── Category filter ──
@@ -1300,9 +1337,13 @@ async function loadUserTier() {
       badge.className   = 'tier-badge tier-pro';
       document.getElementById('exportCsv').disabled  = false;
       document.getElementById('exportJson').disabled = false;
+      const proNote = document.querySelector('.export-note-pro');
+      if (proNote) proNote.style.display = '';
     } else {
       badge.textContent = 'BASIC';
       badge.className   = 'tier-badge tier-basic';
+      const freeNote = document.querySelector('.export-note-free');
+      if (freeNote) freeNote.style.display = '';
     }
   } catch(e) {
     // Not logged in or auth failed — export buttons remain disabled
@@ -1419,7 +1460,7 @@ const MOSTLIKED_COLORS = {
   luxury_car:  '#C48AFF',  // lavender (distinct from overall dark teal)
   suv:         '#A84B2F',  // terra/rust
   pickup:      '#FFC553',  // gold
-  sports_car:  '#944454',  // mauve
+  sports_car:  '#C62A2A',  // saturated red — visually distinct from terra/rust SUV
   van:         '#6E522B',  // brown
   midsize_car: '#848456',  // olive
   compact_car: '#BCE2E7',  // light cyan
@@ -1441,6 +1482,27 @@ function setMostLikedRange(range) {
     xScale.min = now - years * 365.25 * 24 * 3600 * 1000;
   }
   mostlikedChart.update();
+  updateMostLikedRangeDelta();
+}
+
+// Compute % change of the Overall MostLiked series over the visible range.
+function updateMostLikedRangeDelta() {
+  const el = document.getElementById('mlRangeDelta');
+  if (!el || !mostlikedChart) return;
+  const overallIdx = mostlikedSlugBySetIdx.indexOf('overall');
+  if (overallIdx < 0) { el.textContent = ''; el.className = 'range-delta'; return; }
+  const pts = (mostlikedChart.data.datasets[overallIdx] || {}).data || [];
+  const xScale = mostlikedChart.options.scales.x;
+  const minX = xScale && xScale.min != null ? xScale.min : -Infinity;
+  const visible = pts.filter(p => (p.x instanceof Date ? p.x.getTime() : p.x) >= minX);
+  if (visible.length < 2) { el.textContent = ''; el.className = 'range-delta'; return; }
+  const first = visible[0].y, last = visible[visible.length - 1].y;
+  if (!isFinite(first) || !isFinite(last) || first === 0) { el.textContent = ''; el.className = 'range-delta'; return; }
+  const pct = (last / first - 1) * 100;
+  const cls = pct > 0.05 ? 'pos' : pct < -0.05 ? 'neg' : 'flat';
+  const sign = pct > 0 ? '+' : '';
+  el.textContent = `Overall ${sign}${pct.toFixed(1)}% over range`;
+  el.className = `range-delta ${cls}`;
 }
 
 function setupMostLikedRangeToggles() {
@@ -1471,6 +1533,7 @@ function buildMostLikedLineToggles(datasets) {
       meta.hidden = !hidden;
       btn.classList.toggle('active', hidden); // hidden was true -> becoming visible
       mostlikedChart.update();
+      updateMostLikedRangeDelta();
     });
     wrap.appendChild(btn);
   });
@@ -1529,6 +1592,7 @@ async function loadMostLiked() {
     });
     buildMostLikedLineToggles(datasets);
     setupMostLikedRangeToggles();
+    updateMostLikedRangeDelta();
   } catch (e) {
     console.error('loadMostLiked error:', e);
   }
