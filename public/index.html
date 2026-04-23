@@ -544,6 +544,34 @@
       .how-grid { grid-template-columns: 1fr; }
     }
   </style>
+
+<style>
+.qg-hiw{max-width:1100px;margin:32px auto 20px;padding:24px 20px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.025));}
+.qg-hiw-title{font-size:18px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:#FFD700;margin:0 0 6px;text-align:center;}
+.qg-hiw-intro{font-size:13px;line-height:1.6;color:#b4b9c4;max-width:780px;margin:0 auto 24px;text-align:center;}
+.qg-hiw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px;}
+.qg-hiw-block{padding:16px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;background:rgba(255,255,255,0.02);}
+.qg-hiw-block h4{margin:0 0 8px;font-size:13px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#e4e7ef;}
+.qg-hiw-block p{margin:0;font-size:13px;line-height:1.6;color:#9fa5b2;}
+.qg-hiw-gl-title{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#FFD700;margin:0 0 10px;text-align:center;opacity:0.9;}
+.qg-hiw-gl{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:6px 18px;max-width:980px;margin:0 auto;padding:12px 16px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;background:rgba(0,0,0,0.15);}
+.qg-hiw-gl-row{display:flex;gap:8px;font-size:12px;line-height:1.5;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+.qg-hiw-gl-row:last-child{border-bottom:none;}
+.qg-hiw-gl-term{color:#FFD700;font-weight:600;min-width:80px;flex-shrink:0;font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;}
+.qg-hiw-gl-def{color:#9fa5b2;}
+@media (max-width: 600px){
+  .qg-hiw{margin:20px 12px;padding:18px 14px;}
+  .qg-hiw-title{font-size:15px;}
+  .qg-hiw-intro{font-size:12px;}
+  .qg-hiw-grid{grid-template-columns:1fr;gap:10px;}
+  .qg-hiw-block{padding:12px;}
+  .qg-hiw-block h4{font-size:12px;}
+  .qg-hiw-block p{font-size:12px;}
+  .qg-hiw-gl{grid-template-columns:1fr;padding:10px 12px;}
+  .qg-hiw-gl-row{flex-direction:column;gap:2px;}
+  .qg-hiw-gl-term{min-width:0;}
+}
+</style>
 </head>
 <body>
 
@@ -706,6 +734,30 @@
 </main>
 
 <!-- ── Footer ── -->
+    <!-- QG How It Works -->
+    <section class="qg-hiw" aria-label="How It Works">
+      <h3 class="qg-hiw-title">How the Auto Market Index Works</h3>
+      <p class="qg-hiw-intro">The Auto Market Index (AMI) is QuantitativeGenius's independent composite of the US used-vehicle market — 10 segment lines plus 3 composite roll-ups, with a parallel attention index (MostLiked).</p>
+      <div class="qg-hiw-grid">
+        <div class="qg-hiw-block"><h4>13-Line Structure</h4><p>AMI is built from 10 MUVVI-style sub-segments (Compact Car, Midsize Car, Luxury Car, Sports Car, Compact SUV, Midsize SUV, Fullsize SUV, Luxury SUV, Pickup, Van) plus 3 composite lines (SUV Total, Car Total, AMI Total). This mirrors how the industry itself reports segment health.</p></div>
+<div class="qg-hiw-block"><h4>Base 1000 at Jan 2020</h4><p>Every line is anchored to 1000 on January 1, 2020. A reading of 1350 means that segment is up 35% versus Jan 2020 on our weighted-median basket.</p></div>
+<div class="qg-hiw-block"><h4>Monthly Polling</h4><p>Each model in the basket is polled once per month. This matches the cadence of broader auto-market indices and avoids noise from dealer-lot-level daily churn. Rebalance events (basket adjustments) use splice math to preserve continuity.</p></div>
+<div class="qg-hiw-block"><h4>MostLiked Cars & Trucks</h4><p>A separate attention-velocity index running alongside AMI. Computed from public video engagement velocity by segment — a leading signal that complements AMI's price-based reading.</p></div>
+<div class="qg-hiw-block"><h4>Forward-Fill Only</h4><p>Between monthly polls, the previous reading holds. No interpolation; no smoothing. This keeps the chart honest about how fresh each data point is.</p></div>
+      </div>
+      <div class="qg-hiw-gl-title">Glossary</div>
+      <div class="qg-hiw-gl">
+        <div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">AMI</span><span class="qg-hiw-gl-def">Auto Market Index — the 13-line used-vehicle composite</span></div>
+<div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">AMD</span><span class="qg-hiw-gl-def">Auto Market Data — a public long-history overlay benchmark used for context pre-2026</span></div>
+<div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">MUVVI</span><span class="qg-hiw-gl-def">Monthly Used Vehicle Value Index — the industry-standard reporting structure we mirror</span></div>
+<div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">SUV</span><span class="qg-hiw-gl-def">Sport Utility Vehicle</span></div>
+<div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">EV</span><span class="qg-hiw-gl-def">Electric Vehicle</span></div>
+<div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">ICE</span><span class="qg-hiw-gl-def">Internal Combustion Engine</span></div>
+<div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">Basket</span><span class="qg-hiw-gl-def">The set of specific models actively contributing to a segment's index reading</span></div>
+<div class="qg-hiw-gl-row"><span class="qg-hiw-gl-term">Splice</span><span class="qg-hiw-gl-def">Math that preserves chart continuity across rebalance events</span></div>
+      </div>
+    </section>
+
 
     <!-- Time Machine Predictions - Bottom -->
     <div style="text-align:center;padding:20px 0;margin-top:24px;border-top:1px solid rgba(255,255,255,0.06);background:linear-gradient(90deg,rgba(255,215,0,0.04),rgba(0,212,170,0.04),rgba(255,215,0,0.04));">
